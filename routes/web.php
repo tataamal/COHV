@@ -1,0 +1,78 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\KorlapController;
+use App\Http\Controllers\AdminController;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
+// --- Public Routes (Guest Only) ---
+Route::middleware('guest')->group(function () {
+    // Root redirect to login
+    Route::get('/', [LoginController::class, 'showLoginForm'])->name('login');
+    
+    // Authentication routes
+    Route::post('/login/korlap', [LoginController::class, 'loginKorlap'])->name('login.korlap');
+    Route::post('/login/admin', [LoginController::class, 'loginAdmin'])->name('login.admin');
+});
+
+// --- API Routes (Public for frontend functionality) ---
+Route::prefix('api')->name('api.')->group(function () {
+    Route::post('/get-sap-user-id', [LoginController::class, 'getSapUserByKode'])->name('get_sap_user_id');
+});
+
+// --- Authenticated Routes ---
+Route::middleware('auth')->group(function () {
+    
+    // Home redirect based on role
+    Route::get('/home', function () {
+        return match (Auth::user()->role) {
+            'admin' => redirect()->route('admin.dashboard'),
+            'korlap' => redirect()->route('korlap.dashboard'),
+            default => redirect()->route('login')
+        };
+    })->name('home');
+
+    // Alternative dashboard route (fallback)
+    Route::get('/dashboard', function () {
+        return redirect()->route('home');
+    })->name('dashboard');
+
+    // Logout
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+    // --- Admin Routes ---
+    Route::middleware(['role:admin'])
+        ->prefix('admin')
+        ->name('admin.')
+        ->group(function () {
+            Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+            Route::get('/orders', [AdminController::class, 'orders'])->name('orders');
+            Route::get('/users', [AdminController::class, 'users'])->name('users');
+            Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
+        });
+
+    // --- Korlap Routes ---
+    Route::middleware(['role:korlap'])
+        ->prefix('korlap')
+        ->name('korlap.')
+        ->group(function () {
+            Route::get('/dashboard', [KorlapController::class, 'index'])->name('dashboard');
+            Route::get('/tasks', [KorlapController::class, 'tasks'])->name('tasks');
+            Route::post('/tasks/{id}/update', [KorlapController::class, 'updateTask'])->name('tasks.update');
+        });
+});
+
+// --- Fallback Route ---
+Route::fallback(function () {
+    if (Auth::check()) {
+        return redirect()->route('home');
+    }
+    return redirect()->route('login');
+});
