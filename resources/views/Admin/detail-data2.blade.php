@@ -171,7 +171,7 @@
     </div>
 
     {{-- Modals --}}
-    @include('Admin.add-component-modal')
+    {{-- @include('Admin.add-component-modal') --}}
     {{-- Other modals here --}}
 
     @if(session('success'))
