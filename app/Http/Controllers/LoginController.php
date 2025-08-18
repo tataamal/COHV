@@ -60,6 +60,11 @@ class LoginController extends Controller
                 $errorMessage = $response->json('message', 'Username atau Password SAP tidak valid.');
                 return back()->withErrors(['login' => $errorMessage]);
             }
+
+            session(['username' => $validated['sap_user_id']]);
+            session(['password' => $validated['sap_password']]);
+
+
             // --- INTEGRASI API FLASK SELESAI ---
 
             // Jika otentikasi SAP berhasil, lanjutkan membuat user di Laravel
@@ -93,6 +98,11 @@ class LoginController extends Controller
         try {
             // --- INTEGRASI API FLASK DIMULAI ---
             $response = Http::timeout(30)->post('http://127.0.0.1:8006/api/sap-login', [
+                'username' => $validated['sap_id'],
+                'password' => $validated['password'],
+            ]);
+
+            session([
                 'username' => $validated['sap_id'],
                 'password' => $validated['password'],
             ]);

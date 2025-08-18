@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\KorlapController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ManufactController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,16 +47,15 @@ Route::middleware('auth')->group(function () {
 
     // Logout
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+    Route::get('data2/{kode}', [ManufactController::class, 'DetailData2'])->name('detail.data2');
+    Route::get('data2/detail/{kode}', [ManufactController::class, 'showDetail'])->name('show.detail.data2');
 
     // --- Admin Routes ---
     Route::middleware(['role:admin'])
         ->prefix('admin')
         ->name('admin.')
         ->group(function () {
-            Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
-            Route::get('/orders', [AdminController::class, 'orders'])->name('orders');
-            Route::get('/users', [AdminController::class, 'users'])->name('users');
-            Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
+            Route::get('/dashboard', action: [AdminController::class, 'index'])->name('dashboard');
         });
 
     // --- Korlap Routes ---

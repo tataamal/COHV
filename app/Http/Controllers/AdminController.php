@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ProductionTData1;
+use App\Models\ProductionTData2;
+use App\Models\ProductionTData3;
+use App\Models\ProductionTData4;
 
 class AdminController extends Controller
 {
@@ -12,49 +16,12 @@ class AdminController extends Controller
      */
     public function index()
     {
-        // Sample data - replace with your actual data queries
-        $dashboardData = [
-            'total_orders' => 3,
-            'completed_orders' => 1,
-            'in_progress_orders' => 1,
-            'pending_orders' => 1,
-            'chart_data' => [
-                'labels' => ['Order 1002345', 'Order 1002346', 'Order 1002347'],
-                'target_quantities' => [150, 200, 50],
-                'confirmed_quantities' => [150, 120, 0],
-            ],
-            'recent_orders' => [
-                [
-                    'order_id' => '1002345',
-                    'material' => 'RM-00123',
-                    'description' => 'Rangka Kayu Jati Utama',
-                    'target_qty' => 150.000,
-                    'confirmed_qty' => 150.000,
-                    'remaining_qty' => 0.000,
-                    'status' => 'completed'
-                ],
-                [
-                    'order_id' => '1002346',
-                    'material' => 'SF-00567',
-                    'description' => 'Panel Pintu Finishing',
-                    'target_qty' => 200.000,
-                    'confirmed_qty' => 120.000,
-                    'remaining_qty' => 80.000,
-                    'status' => 'in_progress'
-                ],
-                [
-                    'order_id' => '1002347',
-                    'material' => 'FG-00890',
-                    'description' => 'Kursi Rakit Siap Jual',
-                    'target_qty' => 50.000,
-                    'confirmed_qty' => 0.000,
-                    'remaining_qty' => 50.000,
-                    'status' => 'pending'
-                ]
-            ]
-        ];
-        
-        return view('Admin.dashboard', compact('dashboardData'));
+        $TData1 = ProductionTData1::count();
+        $TData2 = ProductionTData2::count();
+        $TData3 = ProductionTData3::count();
+        $TData4 = ProductionTData4::count();
+    
+        return view('Admin.dashboard', compact('TData1', 'TData2', 'TData3', 'TData4'));
     }
 
 

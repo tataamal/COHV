@@ -62,7 +62,7 @@ class AppServiceProvider extends ServiceProvider
                         foreach ($allKodes as $kode) {
                             $submenuItems[] = [
                                 'name' => $kode->nama_bagian,
-                                'route' => '#', // Ganti dengan route yang relevan
+                                'route' => route('detail.data2', [$kode->kode]) , // Ganti dengan route yang relevan
                                 'badge' => $kode->kategori,
                             ];
                         }

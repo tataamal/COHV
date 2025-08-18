@@ -12,7 +12,7 @@
                     </div>
                 </div>
                 <div class="ml-4">
-                    <h4 class="text-lg font-semibold text-gray-900">1</h4>
+                    <h4 class="text-lg font-semibold text-gray-900">{{ $TData1 }}</h4>
                     <p class="text-sm text-gray-600">Jumlah T-Data 1</p>
                 </div>
             </div>
@@ -29,7 +29,7 @@
                     </div>
                 </div>
                 <div class="ml-4">
-                    <h4 class="text-lg font-semibold text-gray-900">1</h4>
+                    <h4 class="text-lg font-semibold text-gray-900">{{ $TData2 }}</h4>
                     <p class="text-sm text-gray-600">Jumlah T-Data 2</p>
                 </div>
             </div>
@@ -46,7 +46,7 @@
                     </div>
                 </div>
                 <div class="ml-4">
-                    <h4 class="text-lg font-semibold text-gray-900">1</h4>
+                    <h4 class="text-lg font-semibold text-gray-900">{{ $TData3 }}</h4>
                     <p class="text-sm text-gray-600">Jumlah T-Data 3</p>
                 </div>
             </div>
@@ -63,7 +63,7 @@
                     </div>
                 </div>
                 <div class="ml-4">
-                    <h4 class="text-lg font-semibold text-gray-900">1</h4>
+                    <h4 class="text-lg font-semibold text-gray-900">{{ $TData4 }}</h4>
                     <p class="text-sm text-gray-600">Jumlah T-Data 4</p>
                 </div>
             </div>
