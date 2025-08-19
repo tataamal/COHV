@@ -256,4 +256,42 @@ class ManufactController extends Controller
             'search' => $search,
         ]);
     }
+
+    public function convertPlannedOrder(Request $request)
+    {
+        // 1. Validasi input dari frontend
+        $validated = $request->validate([
+            'PLANNED_ORDER' => 'required|string',
+            'AUART' => 'required|string',
+        ]);
+        // 2. Tentukan URL API Python Anda
+        try {
+            // 3. Kirim request POST ke API Python menggunakan Laravel HTTP Client
+            $response = Http::timeout(0)->withHeaders([
+                'X-SAP-Username' => session('username'),
+                'X-SAP-Password' => session('password'),
+            ])->post('http://127.0.0.1:8006/api/create_prod_order',[
+                'PLANNED_ORDER' => $validated['PLANNED_ORDER'],
+                'AUART' => $validated['AUART'],
+            ]);
+            // 4. Periksa jika request ke Python gagal
+            if ($response->failed()) {
+                // Jika gagal, kirim pesan error ke frontend
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal terhubung ke service SAP/Python.',
+                    'details' => $response->body() // Opsional: kirim detail error
+                ], 502); // 502 Bad Gateway adalah status yang tepat untuk proxy error
+            }
+            // 5. Jika berhasil, teruskan respons asli dari Python ke frontend
+            return $response->json();
+        } catch (\Exception $e) {
+            // Menangani error jika server Python tidak bisa dihubungi sama sekali
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak dapat menjangkau server SAP/Python.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

@@ -294,10 +294,10 @@
             row.innerHTML = `
                 <td class="px-2 py-1 border text-center">${canSelect ? `<input type="checkbox" class="bulk-select" data-type="${canSelectForPLO ? 'PLO' : 'PRO'}" data-id="${canSelectForPLO ? d3.PLNUM : d3.AUFNR}" data-auart="${d3.AUART || ''}" onchange="handleBulkSelect(this)">` : ''}</td>
                 <td class="px-2 py-1 border text-center">${index}</td>
-                <td class="px-2 py-1 border">${d3.PLNUM || '-'}</td>
+                <td class="px-2 py-1 border">${d3.PLNUM || '-'} <button class="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700" onclick="showTData4ByPlnum('${d3.PLNUM}')">Component</button></td>
                 <td class="px-2 py-1 border">${d3.AUFNR || '-'}</td>
                 <td class="px-2 py-1 border text-center"><span class="px-2 py-1 rounded-full text-xs font-medium ${statusClass}">${statusDisplay}</span></td>
-                <td class="px-2 py-1 border"><div class="flex gap-1">${d3.PLNUM ? `<button class="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700" onclick="showTData4ByPlnum('${d3.PLNUM}')">Comp</button>` : ''}${d3.AUFNR ? `<button class="bg-indigo-600 text-white px-2 py-1 rounded text-xs hover:bg-indigo-700" onclick="showTData1('${d3.ORDERX}', '${d3.VORNR}')">Route</button>` : ''}${d3.AUFNR ? `<button class="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700" onclick="showTData4ByAufnr('${d3.AUFNR}')">Comp</button>` : ''}</div></td>
+                <td class="px-2 py-1 border"><div class="flex gap-1">${d3.PLNUM ? `<button class="bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700" onclick='convertPlannedOrder(${JSON.stringify(d3)})'>Convert</button>` : ''}${d3.AUFNR ? `<button class="bg-indigo-600 text-white px-2 py-1 rounded text-xs hover:bg-indigo-700" onclick="showTData1('${d3.ORDERX}', '${d3.VORNR}')">Route</button>` : ''}${d3.AUFNR ? `<button class="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700" onclick="showTData4ByAufnr('${d3.AUFNR}')">Comp</button>` : ''}</div></td>
                 <td class="px-2 py-1 border">${d3.DISPO || '-'}</td>
                 <td class="px-2 py-1 border">${d3.MATNR ? ltrim(d3.MATNR, '0') : '-'}</td>
                 <td class="px-2 py-1 border">${d3.MAKTX || '-'}</td>
@@ -308,6 +308,66 @@
                 <td class="px-2 py-1 border">${formatDate(d3.SSSLD)}</td>
             `;
             return row;
+        }
+
+        function convertPlannedOrder(d3) {
+            console.log('tombol telah ditekan');
+            const plnum = d3.PLNUM;
+            const auart = d3.AUART;
+
+            if (!plnum || !auart) {
+                return alert('PLNUM atau Order Type (AUART) tidak ditemukan.');
+            }
+
+            if (!confirm(`Konversi Planned Order ${plnum} (Tipe: ${auart})?`)) return;
+
+            const loader = document.getElementById('global-loading');
+            if (loader) loader.style.display = 'flex';
+
+            // 1. URL diubah sesuai dengan route di Python
+            const url = '/api/create_prod_order';
+
+            // 2. Data disiapkan dalam bentuk objek
+            const requestData = {
+                PLANNED_ORDER: plnum,
+                AUART: auart
+            };
+
+            fetch(url, {
+                // 3. Metode diubah menjadi 'POST'
+                method: 'POST', 
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                    // 4. Header Content-Type ditambahkan (sangat penting untuk POST)
+                    'Content-Type': 'application/json'
+                },
+                // 5. Data dikirim melalui 'body' dalam format string JSON
+                body: JSON.stringify(requestData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    // Coba baca error dari JSON jika ada, jika tidak, gunakan status teks
+                    return response.json().then(err => { throw new Error(err.error || response.statusText); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    alert(`Order ${data.order_number} berhasil dibuat.`);
+                    location.reload();
+                } else {
+                    // Menampilkan pesan error spesifik dari SAP/Python
+                    const returnMsg = data.return || {};
+                    throw new Error(returnMsg.MESSAGE || 'Terjadi kesalahan dari server saat konversi.');
+                }
+            })
+            .catch(error => {
+                alert(error.message);
+            })
+            .finally(() => {
+                if (loader) loader.style.display = 'none';
+            });
         }
 
         // --- Fungsi untuk menampilkan T_DATA1 dan T_DATA4 ---
@@ -330,9 +390,58 @@
         }
         
         function createComponentTableHtml(data, title) {
-            if (!data || data.length === 0) return `<p class="text-center text-gray-500">Tidak ada data komponen.</p>`;
-            let tableRows = data.map((t4, index) => `<tr class="border-t"><td class="p-2 border">${index + 1}</td><td class="p-2 border">${ltrim(t4.MATNR, '0')}</td><td class="p-2 border">${t4.MAKTX}</td><td class="p-2 border text-right">${t4.BDMNG} ${t4.MEINS}</td></tr>`).join('');
-            return `<h4 class="text-md font-semibold mb-2">${title}</h4><table class="w-full text-sm border"><thead class="bg-blue-50"><tr><th class="p-2 border text-blue-800 font-semibold">No.</th><th class="p-2 border text-blue-800 font-semibold">Material</th><th class="p-2 border text-blue-800 font-semibold">Description</th><th class="p-2 border text-blue-800 font-semibold">Req. Qty</th></tr></thead><tbody>${tableRows}</tbody></table>`;
+            // Menangani jika array data tidak ada atau kosong
+            if (!data || data.length === 0) {
+                return `<p class="text-center text-gray-500">Tidak ada data komponen.</p>`;
+            }
+
+            // Placeholder untuk data kosong dengan gaya yang diminta
+            const emptyPlaceholder = `<span class="text-gray-500 opacity-50">Tidak ada data</span>`;
+
+            // Membuat baris tabel (<tr>)
+            const tableRows = data.map((item, index) => {
+                // Menggunakan Nullish Coalescing Operator (??) untuk menangani nilai null/undefined
+                const matnr = (item.MATNR ?? '').toString().replace(/^0+/, '') || emptyPlaceholder;
+                const maktx = item.MAKTX || emptyPlaceholder;
+                const ltext = item.LTEXT || emptyPlaceholder;
+                const meins = item.MEINS || '';
+
+                // Menangani kolom numerik, nilai 0 tetap ditampilkan
+                const bdmng = item.BDMNG != null ? `${item.BDMNG} ${meins}`.trim() : emptyPlaceholder;
+                const labst = item.LABST != null ? `${item.LABST} ${meins}`.trim() : emptyPlaceholder;
+
+                return `
+                    <tr class="border-t">
+                        <td class="p-2 border">${index + 1}</td>
+                        <td class="p-2 border">${matnr}</td>
+                        <td class="p-2 border">${maktx}</td>
+                        <td class="p-2 border text-right">${bdmng}</td>
+                        <td class="p-2 border text-right">${labst}</td>
+                        <td class="p-2 border">${ltext}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Menggabungkan semua bagian menjadi HTML tabel yang utuh
+            return `
+                <h4 class="text-md font-semibold mb-2">${title}</h4>
+                
+                <table class="w-full text-sm border">
+                    <thead class="bg-blue-50">
+                        <tr>
+                            <th class="p-2 border text-blue-800 font-semibold">No.</th>
+                            <th class="p-2 border text-blue-800 font-semibold">Material</th>
+                            <th class="p-2 border text-blue-800 font-semibold">Description</th>
+                            <th class="p-2 border text-blue-800 font-semibold">Req. Qty</th>
+                            <th class="p-2 border text-blue-800 font-semibold">Stock</th>
+                            <th class="p-2 border text-blue-800 font-semibold">Spec. Requirement</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                    </tbody>
+                </table>
+            `;
         }
 
         function toggleAdditionalData(key, contentGenerator) {
@@ -350,8 +459,23 @@
         function handleBulkSelect(checkbox) {
             const type = checkbox.dataset.type;
             const id = checkbox.dataset.id;
-            const set = (type === 'PLO') ? selectedPLO : selectedPRO;
-            if (checkbox.checked) { set.add(id); } else { set.delete(id); }
+            const auart = checkbox.dataset.auart;
+
+            if (type === 'PLO') {
+                // Menyimpan data sebagai string JSON agar Set bisa membedakannya
+                const ploDataString = JSON.stringify({ plnum: id, auart: auart });
+                if (checkbox.checked) {
+                    selectedPLO.add(ploDataString);
+                } else {
+                    selectedPLO.delete(ploDataString);
+                }
+            } else { // Untuk PRO (Release)
+                if (checkbox.checked) {
+                    selectedPRO.add(id);
+                } else {
+                    selectedPRO.delete(id);
+                }
+            }
             updateBulkControls();
         }
         
@@ -384,10 +508,48 @@
         }
 
         function bulkConvertPlannedOrders() {
-            if (selectedPLO.size === 0) return alert('No PLO selected.');
-            if (confirm(`Are you sure you want to convert ${selectedPLO.size} planned orders?`)) {
-                alert('Fungsi bulk convert belum diimplementasikan di backend.');
-            }
+            if (selectedPLO.size === 0) return alert('Tidak ada PLO yang dipilih.');
+
+            if (!confirm(`Apakah Anda yakin ingin mengkonversi ${selectedPLO.size} Planned Order?`)) return;
+
+            const loader = document.getElementById('global-loading');
+            if (loader) loader.style.display = 'flex';
+
+            const ploArray = Array.from(selectedPLO).map(itemStr => JSON.parse(itemStr));
+
+            Promise.all(ploArray.map(item => {
+                // MENYESUAIKAN DENGAN API PYTHON
+                const url = '/create_prod_order'; // URL BENAR
+                const requestData = {
+                    PLANNED_ORDER: item.plnum,
+                    AUART: item.auart
+                };
+
+                return fetch(url, {
+                    method: 'POST', // METODE BENAR
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json' // HEADER PENTING
+                    },
+                    body: JSON.stringify(requestData) // DATA DIKIRIM DI BODY
+                }).then(res => {
+                    if (!res.ok) return Promise.reject(res.statusText);
+                    return res.json();
+                });
+            }))
+            .then(results => {
+                const successCount = results.filter(r => r.success).length;
+                alert(`${successCount} dari ${ploArray.length} Planned Order berhasil dikonversi.`);
+                location.reload();
+            })
+            .catch(error => {
+                console.error("Bulk convert error:", error);
+                alert('Terjadi kesalahan saat konversi massal. Beberapa atau semua order mungkin gagal.');
+            })
+            .finally(() => {
+                if (loader) loader.style.display = 'none';
+            });
         }
 
         function bulkReleaseOrders() {

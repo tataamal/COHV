@@ -27,6 +27,7 @@ Route::middleware('guest')->group(function () {
 Route::prefix('api')->name('api.')->group(function () {
     Route::post('/get-sap-user-id', [LoginController::class, 'getSapUserByKode'])->name('get_sap_user_id');
 });
+Route::post('/create_prod_order', [ManufactController::class, 'convertPlannedOrder'])->name('convert-button');
 
 // --- Authenticated Routes ---
 Route::middleware('auth')->group(function () {
