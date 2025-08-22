@@ -50,6 +50,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     Route::get('data2/{kode}', [ManufactController::class, 'DetailData2'])->name('detail.data2');
     Route::get('data2/detail/{kode}', [ManufactController::class, 'showDetail'])->name('show.detail.data2');
+    Route::match(['get', 'post'], 'data/refresh', [ManufactController::class, 'dataRefresh'])->name('data.refresh');
 
     // --- Admin Routes ---
     Route::middleware(['role:admin'])
