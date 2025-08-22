@@ -1,10 +1,45 @@
 @props([
     'user',
+    // Format item yang disarankan:
+    // ['name' => 'Dashboard', 'route_name' => 'dashboard.show']
+    // ['name' => 'List',      'route_name' => 'data2.detail']
+    //
+    // Opsi lanjutan per item (semua opsional):
+    // - 'params'      => ['foo' => 'bar']      // param ekstra selain 'kode'
+    // - 'active_on'   => 'dashboard.*'         // pola aktif khusus
+    // - 'route'       => '/path/with/{kode}'   // kalau ingin pakai path manual, boleh
     'navigation' => [
-        ['name' => 'Dashboard', 'route' => '#', 'active' => true],
-        ['name' => 'List', 'route' => '#', 'active' => false],
-    ]
+        ['name' => 'Dashboard', 'route_name' => 'dashboard.show'],
+        ['name' => 'List',      'route_name' => 'show.detail.data2'],
+    ],
 ])
+
+@php
+    // 1) Ambil kode dari route param atau fallback segment(1)/query
+    $kodeAktif = request()->route('kode') ?? request()->segment(1) ?? request('kode');
+
+    // 2) Normalisasi navigation → bentuk href & active
+    $normalizedNav = collect($navigation)->map(function ($item) use ($kodeAktif) {
+        // Default values
+        $name   = $item['name'] ?? 'Menu';
+        $active = false;
+        $href   = '#';
+
+        // Jika pakai named route
+        if (isset($item['route_name'])) {
+            $params = array_merge(['kode' => $kodeAktif], $item['params'] ?? []);
+            $href   = route($item['route_name'], $params);
+            $active = request()->routeIs($item['route_name'].'*');
+        }
+        // Jika pakai string route manual
+        elseif (isset($item['route'])) {
+            $href   = str_replace('{kode}', $kodeAktif, $item['route']);
+            $active = url()->current() === url($href);
+        }
+
+        return compact('name','href','active');
+    })->all();
+@endphp
 
 <header class="relative flex items-center justify-between p-4 bg-white border-b shrink-0">
     <!-- Left side content -->
@@ -29,8 +64,8 @@
         
         <!-- Navigasi Top Bar (Desktop) -->
         <nav class="hidden md:flex items-center space-x-2 ml-4">
-            @foreach($navigation as $item)
-                <a href="{{ $item['route'] }}" 
+            @foreach($normalizedNav as $item)
+                <a href="{{ $item['href'] }}" 
                    class="px-3 py-2 text-sm font-medium rounded-md transition-colors
                           {{ $item['active'] ? 'text-white bg-blue-700 hover:bg-blue-800' : 'text-gray-500 hover:text-blue-700 hover:bg-gray-100' }}">
                     {{ $item['name'] }}
@@ -42,8 +77,8 @@
     <!-- Navigasi Top Bar (Mobile - Centered) -->
     <nav class="absolute left-1/2 -translate-x-1/2 md:hidden">
         <div class="flex items-center space-x-2">
-            @foreach($navigation as $item)
-                <a href="{{ $item['route'] }}" 
+            @foreach($normalizedNav as $item)
+                <a href="{{ $item['href'] }}" 
                    class="px-3 py-2 text-sm font-medium rounded-md transition-colors
                           {{ $item['active'] ? 'text-white bg-blue-700' : 'text-gray-500 hover:text-blue-700' }}">
                     {{ $item['name'] }}
@@ -62,8 +97,6 @@
             <img class="h-10 w-10 rounded-full object-cover border-2 border-gray-200" 
                  src="{{ $user->avatar ?? 'https://placehold.co/100x100/E2E8F0/4A5568?text=' . substr($user->name ?? 'G', 0, 1) }}" 
                  alt="{{ $user->name ?? 'User' }} Avatar">
-            
-            <!-- Status Indicator (Online/Offline) -->
             <span class="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-green-400 ring-2 ring-white"></span>
         </div>
     </div>

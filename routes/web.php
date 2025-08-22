@@ -29,6 +29,11 @@ Route::prefix('api')->name('api.')->group(function () {
 });
 Route::post('/create_prod_order', [ManufactController::class, 'convertPlannedOrder'])->name('convert-button');
 
+// route untuk kelola menu admin
+Route::get('/dashboard/{kode}', [AdminController::class, 'index'])->name('dashboard.show');
+Route::get('data2/{kode}', [ManufactController::class, 'DetailData2'])->name('detail.data2');
+Route::get('data2/detail/{kode}', [ManufactController::class, 'showDetail'])->name('show.detail.data2');
+
 // --- Authenticated Routes ---
 Route::middleware('auth')->group(function () {
     
@@ -48,9 +53,7 @@ Route::middleware('auth')->group(function () {
 
     // Logout
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-    Route::get('data2/{kode}', [ManufactController::class, 'DetailData2'])->name('detail.data2');
-    Route::get('data2/detail/{kode}', [ManufactController::class, 'showDetail'])->name('show.detail.data2');
-    Route::match(['get', 'post'], 'data/refresh', [ManufactController::class, 'dataRefresh'])->name('data.refresh');
+    // Route::match(['get', 'post'], 'data/refresh', [ManufactController::class, 'dataRefresh'])->name('data.refresh');
 
     // --- Admin Routes ---
     Route::middleware(['role:admin'])

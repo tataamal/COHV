@@ -1,6 +1,6 @@
 <x-layouts.app title="Dashboard Admin">
     <!-- Stats Cards Row -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Jumlah T-Data 1 -->
         <x-ui.card>
             <div class="flex items-center">
@@ -12,8 +12,8 @@
                     </div>
                 </div>
                 <div class="ml-4">
-                    <h4 class="text-lg font-semibold text-gray-900">{{ $TData1 }}</h4>
-                    <p class="text-sm text-gray-600">Jumlah T-Data 1</p>
+                    <h4 class="text-lg font-semibold text-gray-900">{{ $TData2 }}</h4>
+                    <p class="text-sm text-gray-600">Total Outstanding Order</p>
                 </div>
             </div>
         </x-ui.card>
@@ -29,8 +29,8 @@
                     </div>
                 </div>
                 <div class="ml-4">
-                    <h4 class="text-lg font-semibold text-gray-900">{{ $TData2 }}</h4>
-                    <p class="text-sm text-gray-600">Jumlah T-Data 2</p>
+                    <h4 class="text-lg font-semibold text-gray-900">{{ $TData1 }}</h4>
+                    <p class="text-sm text-gray-600">Total PRO</p>
                 </div>
             </div>
         </x-ui.card>
@@ -46,31 +46,14 @@
                     </div>
                 </div>
                 <div class="ml-4">
-                    <h4 class="text-lg font-semibold text-gray-900">{{ $TData3 }}</h4>
-                    <p class="text-sm text-gray-600">Jumlah T-Data 3</p>
-                </div>
-            </div>
-        </x-ui.card>
-
-        <!-- T-DATA 4 -->
-        <x-ui.card>
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                </div>
-                <div class="ml-4">
-                    <h4 class="text-lg font-semibold text-gray-900">{{ $TData4 }}</h4>
-                    <p class="text-sm text-gray-600">Jumlah T-Data 4</p>
+                    <h4 class="text-lg font-semibold text-gray-900">{{ $outstandingReservasi }}</h4>
+                    <p class="text-sm text-gray-600">Total Outstanding Reservasi</p>
                 </div>
             </div>
         </x-ui.card>
     </div>
     <!-- Chart Section -->
-    <x-ui.card title="Analisis Kuantitas Order (T3 Data)" description="Menampilkan perbandingan target vs konfirmasi order">
+    <x-ui.card title="Data Kapasitas Workcenter" description="Menampilkan perbandingan kapasitas masing-masing workcenter dengan PRO">
         <x-charts.bar-chart 
             chart-id="t3Chart"
             :labels="['Order 1002345', 'Order 1002346', 'Order 1002347']"

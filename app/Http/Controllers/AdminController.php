@@ -14,14 +14,16 @@ class AdminController extends Controller
     /**
      * Show the admin dashboard.
      */
-    public function index()
+    public function index(Request $request, $kode)
     {
         $TData1 = ProductionTData1::count();
         $TData2 = ProductionTData2::count();
         $TData3 = ProductionTData3::count();
         $TData4 = ProductionTData4::count();
+
+        $outstandingReservasi = ProductionTData4::whereColumn('KALAB', '<', 'BDMNG')->count();
     
-        return view('Admin.dashboard', compact('TData1', 'TData2', 'TData3', 'TData4'));
+        return view('Admin.dashboard', compact('TData1', 'TData2', 'TData3', 'outstandingReservasi'));
     }
 
 
