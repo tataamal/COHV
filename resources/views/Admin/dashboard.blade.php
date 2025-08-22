@@ -93,41 +93,4 @@
                 ]
             ]" />
     </x-ui.card>
-
-    <!-- Table Section -->
-    <x-ui.card title="Data Table T3" description="Menampulkan data order manufaktur terkini">
-        <x-ui.responsive-table 
-            :headers="['Order', 'Material', 'Deskripsi', 'Qty Target', 'Qty Konfirmasi', 'Sisa', 'Status']"
-            :rows="[
-                [
-                    '1002345',
-                    'RM-00123',
-                    'Rangka Kayu Jati Utama',
-                    '150.000',
-                    '<span class=\"text-green-600 font-semibold\">150.000</span>',
-                    '0.000',
-                    '<span class=\"bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full\">Completed</span>'
-                ],
-                [
-                    '1002346',
-                    'SF-00567',
-                    'Panel Pintu Finishing',
-                    '200.000',
-                    '<span class=\"text-blue-600 font-semibold\">120.000</span>',
-                    '<span class=\"text-red-600 font-semibold\">80.000</span>',
-                    '<span class=\"bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full\">In Progress</span>'
-                ],
-                [
-                    '1002347',
-                    'FG-00890',
-                    'Kursi Rakit Siap Jual',
-                    '50.000',
-                    '0.000',
-                    '<span class=\"text-red-600 font-semibold\">50.000</span>',
-                    '<span class=\"bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full\">Pending</span>'
-                ]
-            ]"
-            hoverable
-            striped />
-    </x-ui.card>
 </x-layouts.app>

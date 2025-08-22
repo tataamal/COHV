@@ -27,6 +27,7 @@ Route::middleware('guest')->group(function () {
 Route::prefix('api')->name('api.')->group(function () {
     Route::post('/get-sap-user-id', [LoginController::class, 'getSapUserByKode'])->name('get_sap_user_id');
 });
+Route::post('/create_prod_order', [ManufactController::class, 'convertPlannedOrder'])->name('convert-button');
 
 // --- Authenticated Routes ---
 Route::middleware('auth')->group(function () {
@@ -49,6 +50,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     Route::get('data2/{kode}', [ManufactController::class, 'DetailData2'])->name('detail.data2');
     Route::get('data2/detail/{kode}', [ManufactController::class, 'showDetail'])->name('show.detail.data2');
+    Route::match(['get', 'post'], 'data/refresh', [ManufactController::class, 'dataRefresh'])->name('data.refresh');
 
     // --- Admin Routes ---
     Route::middleware(['role:admin'])
