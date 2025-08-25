@@ -30,6 +30,7 @@ Route::prefix('api')->name('api.')->group(function () {
 Route::post('/create_prod_order', [ManufactController::class, 'convertPlannedOrder'])->name('convert-button');
 
 // route untuk kelola menu admin
+Route::get('/dashboard_all', [AdminController::class, 'AdminDashboard'])->name('dashboard_all');
 Route::get('/dashboard/{kode}', [AdminController::class, 'index'])->name('dashboard.show');
 Route::get('data2/{kode}', [ManufactController::class, 'DetailData2'])->name('detail.data2');
 Route::get('data2/detail/{kode}', [ManufactController::class, 'showDetail'])->name('show.detail.data2');
@@ -40,7 +41,7 @@ Route::middleware('auth')->group(function () {
     // Home redirect based on role
     Route::get('/home', function () {
         return match (Auth::user()->role) {
-            'admin' => redirect()->route('admin.dashboard'),
+            'admin' => redirect()->route('dashboard_all'),
             'korlap' => redirect()->route('korlap.dashboard'),
             default => redirect()->route('login')
         };

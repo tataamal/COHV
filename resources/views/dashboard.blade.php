@@ -53,11 +53,27 @@
         </x-ui.card>
     </div>
     <!-- Chart Section -->
-    <x-ui.card title="Data Kapasitas Workcenter" description="Jumlah PRO (AUFNR) di tiap-tiap Workcenter (ARBPL)">
-        <x-charts.bar-chart
+    <x-ui.card title="Data Kapasitas Workcenter" description="Menampilkan perbandingan kapasitas masing-masing workcenter dengan PRO">
+        <x-charts.bar-chart 
             chart-id="t3Chart"
-            :labels="$labels"
-            :datasets="$datasets"
-        />
+            :labels="['Order 1002345', 'Order 1002346', 'Order 1002347']"
+            :datasets="[
+                [
+                    'label' => 'Qty Target (PSMNG)',
+                    'data' => [150, 200, 50],
+                    'backgroundColor' => 'rgba(148, 163, 184, 0.6)',
+                    'borderColor' => 'rgba(71, 85, 105, 1)',
+                    'borderWidth' => 1,
+                    'borderRadius' => 4
+                ],
+                [
+                    'label' => 'Qty Konfirmasi (WEMNG)',
+                    'data' => [150, 120, 0],
+                    'backgroundColor' => 'rgba(59, 130, 246, 0.6)',
+                    'borderColor' => 'rgba(37, 99, 235, 1)',
+                    'borderWidth' => 1,
+                    'borderRadius' => 4
+                ]
+            ]" />
     </x-ui.card>
 </x-layouts.app>
