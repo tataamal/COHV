@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Data3Controller;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\LoginController;
@@ -34,6 +35,11 @@ Route::get('/dashboard_all', [AdminController::class, 'AdminDashboard'])->name('
 Route::get('/dashboard/{kode}', [AdminController::class, 'index'])->name('dashboard.show');
 Route::get('data2/{kode}', [ManufactController::class, 'DetailData2'])->name('detail.data2');
 Route::get('data2/detail/{kode}', [ManufactController::class, 'showDetail'])->name('show.detail.data2');
+
+
+// route untuk kelola T-DATA3
+Route::get('/release-order/{aufnr}',[Data3Controller::class, 'releaseOrderDirect'])->name('release.order.direct');
+Route::post('/schedule', [Data3Controller::class,'scheduleOrder'])->name('schedule.store');
 
 // --- Authenticated Routes ---
 Route::middleware('auth')->group(function () {

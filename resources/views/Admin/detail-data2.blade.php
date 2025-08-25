@@ -20,7 +20,7 @@
                 <a href="#" onclick="hideAllDetails(); return false;" class="inline-flex items-center px-4 py-2 bg-yellow-300 border border-transparent rounded-md font-semibold text-xs text-neutral-900 uppercase tracking-widest hover:bg-yellow-500">
                     Hide All Detail
                 </a>
-                <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-900">
+                <a href="{{ route('dashboard_all') }}" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-900">
                     &larr; Back
                 </a>
             </div>
@@ -132,8 +132,7 @@
                                 <thead class="bg-gray-100  text-gray-700">
                                     <tr>
                                         <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold"><input type="checkbox" id="select-all" onchange="toggleSelectAll()" class="mr-1"> Select</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold">No.</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold">PLO</th>
+                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold">No.</th> 
                                         <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold">PRO</th>
                                         <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold">STATUS</th>
                                         <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold">ACTION</th>
@@ -218,19 +217,144 @@
     </div>
     </div>
 
-    {{-- Other modals here --}}
+    <!-- ========= SCHEDULE MODAL (FORM POST) ========= -->
+    <div id="scheduleModal" class="fixed inset-0 z-50 hidden">
+        <div id="scheduleOverlay" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0 transition-opacity"></div>
 
-    @if(session('success'))
-        <div id="modal-success" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-            <div class="bg-white p-6 rounded shadow-xl w-full max-w-md text-center">
-                <h2 class="text-lg font-semibold text-green-700 mb-4">Sukses</h2>
-                <p class="text-gray-700 mb-6">{{ session('success') }}</p>
-                <button onclick="document.getElementById('modal-success').remove()"
-                        class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-                    OK
-                </button>
+        <div id="scheduleOverlay" class="absolute inset-0 flex items-center justify-center p-4">
+            <div id="schedulePanel"
+                class="w-full max-w-md origin-center transform rounded-2xl bg-white shadow-2xl opacity-0 scale-95 transition-all">
+            <div class="flex items-center justify-between border-b px-6 py-4">
+                <h3 class="text-lg font-semibold">Schedule Production Order</h3>
+                <button type="button" onclick="closeScheduleModal()"
+                        class="rounded-lg p-2 text-gray-500 hover:bg-gray-100">✕</button>
+            </div>
+
+            <form action="{{ route('schedule.store') }}" method="POST" class="px-6 py-5 space-y-4" id="scheduleForm">
+                @csrf
+                <input type="hidden" name="aufnr" id="scheduleAufnr">
+
+                <div>
+                <label class="text-sm text-gray-600">Tanggal</label>
+                <input type="date" name="date" id="scheduleDate" required
+                        class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500">
+                </div>
+
+                <div>
+                <label class="text-sm text-gray-600">Jam (HH.MM.SS)</label>
+                <input type="text" name="time" id="scheduleTime" placeholder="00.00.00" required
+                        pattern="^\d{2}\.\d{2}\.\d{2}$" inputmode="numeric" autocomplete="off"
+                        class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500">
+                <p class="text-xs text-gray-500 mt-1">Format 24 jam, contoh: 13.30.00</p>
+                </div>
+
+                <div class="border-t px-0 pt-4 flex justify-end gap-2">
+                <button type="button" onclick="closeScheduleModal()"
+                        class="rounded-lg px-4 py-2 text-gray-700 hover:bg-gray-100">Batal</button>
+                <button type="submit"
+                        class="rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700">Simpan</button>
+                </div>
+            </form>
             </div>
         </div>
+    </div>
+
+    <!-- ========= CHANGE WC MODAL (NO SUBMIT YET) ========= -->
+    <div id="changeWcModal" class="fixed inset-0 z-50 hidden">
+        <!-- overlay -->
+        <div id="changeWcOverlay" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0 transition-opacity"></div>
+
+        <!-- panel -->
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div id="changeWcPanel"
+                class="w-full max-w-md origin-center transform rounded-2xl bg-white shadow-2xl opacity-0 scale-95 transition-all">
+                <div class="flex items-center justify-between border-b px-6 py-4">
+                    <h3 class="text-lg font-semibold">Change Work Center</h3>
+                    <button type="button" onclick="closeChangeWcModal()"
+                            class="rounded-lg p-2 text-gray-500 hover:bg-gray-100">✕
+                    </button>
+                </div>
+
+                <div class="px-6 py-5 space-y-4">
+                    <!-- simpan param utk nanti dipakai saat implement submit -->
+                    <input type="hidden" id="changeWcAufnr">
+                    <input type="hidden" id="changeWcVornr">
+
+                    <div>
+                    <label for="changeWcInput" class="text-sm text-gray-600">Work Center</label>
+                    <input type="text" id="changeWcInput" placeholder="Masukkan Work Center baru" value=""
+                            class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500">
+                    <p id="changeWcCurrent" class="text-xs text-gray-500 mt-1"></p>
+                    </div>
+                </div>
+
+                <div class="border-t px-6 py-4 flex justify-end gap-2">
+                    <button type="button" onclick="closeChangeWcModal()"
+                            class="rounded-lg px-4 py-2 text-gray-700 hover:bg-gray-100">Tutup</button>
+                    <!-- tombol dummy; belum melakukan apa-apa -->
+                    <button type="button"
+                            class="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+                            onclick="/* nanti isi submit */ void(0);">Simpan (N/A)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========= CHANGE PV MODAL (NO SUBMIT YET) ========= -->
+    <div id="changePvModal" class="fixed inset-0 z-50 hidden">
+    <!-- overlay -->
+    <div id="changePvOverlay" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0 transition-opacity"></div>
+
+        <!-- panel -->
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div id="changePvPanel"
+                class="w-full max-w-md origin-center transform rounded-2xl bg-white shadow-2xl opacity-0 scale-95 transition-all">
+            <div class="flex items-center justify-between border-b px-6 py-4">
+                <h3 class="text-lg font-semibold">Change Production Version (PV)</h3>
+                <button type="button" onclick="closeChangePvModal()"
+                        class="rounded-lg p-2 text-gray-500 hover:bg-gray-100">✕</button>
+            </div>
+
+            <div class="px-6 py-5 space-y-4">
+                <!-- simpan param utk nanti dipakai saat submit -->
+                <input type="hidden" id="changePvAufnr">
+
+                <div>
+                <label for="changePvInput" class="text-sm text-gray-600">Production Version (PV)</label>
+                <input type="text" id="changePvInput" placeholder="Masukkan PV (mis. 0001)"
+                        class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500">
+                <p id="changePvCurrent" class="text-xs text-gray-500 mt-1"></p>
+                </div>
+            </div>
+
+            <div class="border-t px-6 py-4 flex justify-end gap-2">
+                <button type="button" onclick="closeChangePvModal()"
+                        class="rounded-lg px-4 py-2 text-gray-700 hover:bg-gray-100">Tutup</button>
+                <!-- tombol dummy; belum melakukan apa-apa -->
+                <button type="button"
+                        class="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+                        onclick="/* nanti isi submit */ void(0);">Simpan (N/A)</button>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    {{-- Other modals here --}}
+
+   @if(session('success'))
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            Swal.fire({
+                title: 'Sukses',
+                text: "{{ session('success') }}",
+                icon: 'success',
+                showConfirmButton: true,   // tetap ada tombol OK
+                confirmButtonText: 'OK',
+                timer: 5000,              // auto close setelah 10 detik
+                timerProgressBar: true,    // progress bar di bawah
+            });
+            
+        </script>
     @endif
 
     @push('scripts')
@@ -248,12 +372,27 @@
         let currentFilterName = 'all';
         let currentT2Selection = null;
         function padAufnr(v){ const s=String(v||''); return s.length>=12 ? s : s.padStart(12,'0'); }
+        const RELEASE_ORDER_URL = @json(route('release.order.direct', ['aufnr' => '__AUFNR__']));
 
         // Mengambil data dari controller dan menyimpannya di JavaScript
         const allTData2 = @json($allTData2, JSON_HEX_TAG);
         const allTData3 = @json($allTData3, JSON_HEX_TAG);
         const allTData1 = @json($allTData1, JSON_HEX_TAG);
         const allTData4ByAufnr = @json($allTData4ByAufnr, JSON_HEX_TAG);
+        const tdata1ByAufnr = (() => {
+        const by = {};
+        if (allTData1 && typeof allTData1 === 'object') {
+            Object.values(allTData1).forEach(arr => {
+            (arr || []).forEach(t1 => {
+                const a = (t1?.AUFNR || '').toString();
+                if (!a) return;
+                if (!by[a]) by[a] = [];
+                by[a].push(t1);
+            });
+            });
+        }
+        return by;
+        })();
         const allTData4ByPlnum = @json($allTData4ByPlnum, JSON_HEX_TAG);
 
         function openSalesItem(tr) {
@@ -450,25 +589,31 @@
             let statusClass = 'bg-gray-200 text-gray-800';
             if (d3.STATS === 'CRTD') statusClass = 'bg-orange-100 text-orange-800';
             if (['PCNF', 'REL', 'CNF REL'].includes(d3.STATS)) statusClass = 'bg-green-100 text-green-800';
-            
-            // PERBAIKAN UTAMA: Simpan data di dataset element, bukan di onclick langsung
+
             row.innerHTML = `
-                <td class="px-2 py-1 border text-center">${canSelect ? `<input type="checkbox" class="bulk-select" data-type="${canSelectForPLO ? 'PLO' : 'PRO'}" data-id="${canSelectForPLO ? d3.PLNUM : d3.AUFNR}"  data-auart="${d3.AUART || ''}" onchange="handleBulkSelect(this)">` : ''}</td>
+                <td class="px-2 py-1 border text-center">
+                    ${canSelect ? `<input type="checkbox" class="bulk-select" data-type="${canSelectForPLO ? 'PLO' : 'PRO'}" data-id="${canSelectForPLO ? d3.PLNUM : d3.AUFNR}" data-auart="${d3.AUART || ''}" onchange="handleBulkSelect(this)">` : ''}
+                </td>
                 <td class="px-2 py-1 border text-center">${index}</td>
                 <td class="px-2 py-1 border">
-                ${d3.PLNUM ? 
-                    `${d3.PLNUM} <button class="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700" onclick="showTData4ByPlnum('${d3.PLNUM}')">Component</button>` : 
-                    '-'
-                }
-                </td>
-                <td class="px-2 py-1 border">
                     ${d3.AUFNR || '-'}
+                    ${d3.AUFNR ? `
+                        <button class="bg-indigo-600 text-white px-2 py-1 rounded text-xs hover:bg-indigo-700" onclick="showTData1ByAufnr('${d3.AUFNR}')">Route</button>
+                        <button class="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700" onclick="showTData4ByAufnr('${d3.AUFNR}')">Comp</button>
+                        ` : ''}
                 </td>
                 <td class="px-2 py-1 border text-center">
                     <span class="px-2 py-1 rounded-full text-xs font-medium ${statusClass}">${statusDisplay}</span>
                 </td>
                 <td class="px-2 py-1 border">
-                    <div class="flex gap-1">${d3.PLNUM ? `<button class="convert-btn bg-red-600 text-white px-2 py-1 rounded text-xs hover:bg-red-700" data-row-index="${index}">Convert</button>` : ''}${d3.AUFNR ? `<button class="bg-indigo-600 text-white px-2 py-1 rounded text-xs hover:bg-indigo-700" onclick="showTData1('${d3.ORDERX}', '${d3.VORNR}')">Route</button>` : ''}${d3.AUFNR ? `<button class="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700" onclick="showTData4ByAufnr('${d3.AUFNR}')">Comp</button>` : ''}</div>
+                    <div class="flex gap-1">
+                        ${d3.AUFNR ? `
+                        <button type="button"
+                            class="bg-yellow-200 text-neutral-900 px-2 py-1 rounded text-xs hover:bg-yellow-700"
+                            onclick="openSchedule('${encodeURIComponent(padAufnr(d3.AUFNR))}')">
+                            Reschedule
+                        </button>` : ''}
+                    </div>
                 </td>
                 <td class="px-2 py-1 border">${d3.DISPO || '-'}</td>
                 <td class="px-2 py-1 border">${d3.MATNR ? ltrim(d3.MATNR, '0') : '-'}</td>
@@ -479,10 +624,8 @@
                 <td class="px-2 py-1 border">${formatDate(d3.SSAVD)}</td>
                 <td class="px-2 py-1 border">${formatDate(d3.SSSLD)}</td>
             `;
-            
-            // PERBAIKAN: Simpan data d3 sebagai dataset pada row
+
             row.dataset.rowData = JSON.stringify(d3);
-            
             return row;
         }
 
@@ -651,87 +794,118 @@
 
 
         // --- Fungsi untuk menampilkan T_DATA1 dan T_DATA4 ---
-        function showTData1(orderx, vornr) {
-            const key = `${orderx}-${vornr}`;
-            toggleAdditionalData(`tdata1-${key}`, () => {
-                const data = allTData1[key];
-                if (!data || data.length === 0) return '<p class="text-center text-gray-500">Tidak ada data routing.</p>';
-                let tableRows = data.map((t1, index) => `<tr class="border-t"><td class="p-2 border">${index + 1}</td><td class="p-2 border">${t1.VORNR}</td><td class="p-2 border">${t1.KTEXT}</td><td class="p-2 border">${t1.ARBPL}</td></tr>`).join('');
-                return `<h4 class="text-md font-semibold mb-2">Routing Overview (Order: ${orderx})</h4><table class="w-full text-sm border"><thead class="bg-blue-50"><tr><th class="p-2 border text-blue-800 font-semibold">No.</th><th class="p-2 border text-blue-800 font-semibold">Activity</th><th class="p-2 border text-blue-800 font-semibold">Description</th><th class="p-2 border text-blue-800 font-semibold">Work Center</th></tr></thead><tbody>${tableRows}</tbody></table>`;
-            });
-        }
+        function showTData1ByAufnr(aufnr) {
+            const container = document.getElementById('additional-data-container');
+            const divId = `tdata1-${aufnr}`;
 
-        function showTData4ByAufnr(aufnr) {
-            toggleAdditionalData(`tdata4-aufnr-${aufnr}`, () => createComponentTableHtml(allTData4ByAufnr[aufnr], `Komponen (PRO: ${aufnr})`));
-        }
-
-        function showTData4ByPlnum(plnum) {
-            toggleAdditionalData(`tdata4-plnum-${plnum}`, () => createComponentTableHtml(allTData4ByPlnum[plnum], `Komponen (PLO: ${plnum})`));
-        }
-        
-        function createComponentTableHtml(data, title) {
-            // Menangani jika array data tidak ada atau kosong
-            if (!data || data.length === 0) {
-                return `<p class="text-center text-gray-500">Tidak ada data komponen.</p>`;
+            // Toggle: jika sudah tampil → tutup & kembalikan baris T_DATA3
+            const existing = document.getElementById(divId);
+            if (existing) {
+                existing.remove();
+                document.querySelectorAll('#tdata3-body tr').forEach(row => row.classList.remove('hidden'));
+                return;
             }
 
-            // Placeholder untuk data kosong dengan gaya yang diminta
-            const emptyPlaceholder = `<span class="text-gray-500 opacity-50">Tidak ada data</span>`;
+            // ⬇️ PENTING: Ambil routing dari index per-AUFNR
+            const data = (tdata1ByAufnr && tdata1ByAufnr[aufnr]) ? tdata1ByAufnr[aufnr] : [];
 
-            // Membuat baris tabel (<tr>)
-            const tableRows = data.map((item, index) => {
-                // Menggunakan Nullish Coalescing Operator (??) untuk menangani nilai null/undefined
-                const matnr = (item.MATNR ?? '').toString().replace(/^0+/, '') || emptyPlaceholder;
-                const maktx = item.MAKTX || emptyPlaceholder;
-                const ltext = item.LTEXT || emptyPlaceholder;
-                const meins = item.MEINS || '';
+            if (!Array.isArray(data) || data.length === 0) {
+                alert('Tidak ada data routing ditemukan.');
+                return;
+            }
 
-                // Menangani kolom numerik, nilai 0 tetap ditampilkan
-                const bdmng = item.BDMNG != null ? `${item.BDMNG} ${meins}`.trim() : emptyPlaceholder;
-                const labst = item.LABST != null ? `${item.LABST} ${meins}`.trim() : emptyPlaceholder;
+            // Sembunyikan baris T_DATA3 yang bukan milik AUFNR ini
+            document.querySelectorAll('#tdata3-body tr').forEach(row => {
+                if (!row.textContent.includes(aufnr)) row.classList.add('hidden');
+                else row.classList.remove('hidden');
+            });
+
+            // --- Logika kolom "NEW WORKCENTER" (mengikuti versi sebelumnya) ---
+            const renderNewWC = (t1) => {
+                let defaultPv = '-';
+                if (t1.VERID === '0001') defaultPv = t1.PV1;
+                else if (t1.VERID === '0002') defaultPv = t1.PV2;
+                else if (t1.VERID === '0003') defaultPv = t1.PV3;
+
+                const defaultPrefix = defaultPv?.split('-')[0]?.trim();
+                if (t1.VERID === '0001' && defaultPrefix && (t1.ARBPL?.trim() === defaultPrefix)) {
+                return '-';
+                }
+                return t1.ARBPL || '-';
+            };
+
+            // --- Build rows ---
+            const rowsHtml = data.map((t1, i) => {
+                const pv1Class = (t1.VERID === '0001') ? 'bg-blue-100 font-semibold text-green-900' : '';
+                const pv2Class = (t1.VERID === '0002') ? 'bg-blue-100 font-semibold text-green-900' : '';
+                const pv3Class = (t1.VERID === '0003') ? 'bg-blue-100 font-semibold text-green-900' : '';
+                const newWC = renderNewWC(t1);
 
                 return `
-                    <tr class="border-t">
-                        <td class="p-2 border">${index + 1}</td>
-                        <td class="p-2 border">${matnr}</td>
-                        <td class="p-2 border">${maktx}</td>
-                        <td class="p-2 border text-right">${bdmng}</td>
-                        <td class="p-2 border text-right">${labst}</td>
-                        <td class="p-2 border">${ltext}</td>
-                    </tr>
+                <tr>
+                    <td class="border text-md px-2 py-1 text-center">${i + 1}</td>
+                    <td class="border text-md px-2 py-1 text-center">${t1.VORNR || '-'}</td>
+                    <td class="border text-md px-2 py-1 text-center">${t1.STEUS || '-'}</td>
+                    <td class="border text-md px-2 py-1 text-center ">${t1.KTEXT || '-'}</td>
+                    <td class="border text-md px-2 py-1 text-center ">${newWC}</td>
+                    <td class="border text-md px-2 py-1 text-center ${pv1Class}">${t1.PV1 ?? '-'}</td>
+                    <td class="border text-md px-2 py-1 text-center ${pv2Class}">${t1.PV2 ?? '-'}</td>
+                    <td class="border text-md px-2 py-1 text-center ${pv3Class}">${t1.PV3 ?? '-'}</td>
+                    <td class="border text-md px-2 py-1">
+                    <div class="flex gap-2">
+                        <button class="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-indigo-600"
+                                onclick="openChangeWcModal('${t1.AUFNR}', '${t1.VORNR}', '${t1.ARBPL || ''}')">
+                        Edit WC
+                        </button>
+                        <button class="bg-orange-600 text-white px-2 py-1 rounded text-xs hover:bg-orange-500"
+                                onclick="openChangePvModal('${t1.AUFNR}', '${t1.VERID || ''}')">
+                        Change PV
+                        </button>
+                    </div>
+                    </td>
+                </tr>
                 `;
             }).join('');
 
-            // Menggabungkan semua bagian menjadi HTML tabel yang utuh
-            return `
-                <h4 class="text-md font-semibold mb-2">${title}</h4>
-                
-                <table class="w-full text-sm border">
-                    <thead class="bg-blue-50">
-                        <tr>
-                            <th class="p-2 border text-blue-800 font-semibold">No.</th>
-                            <th class="p-2 border text-blue-800 font-semibold">Material</th>
-                            <th class="p-2 border text-blue-800 font-semibold">Description</th>
-                            <th class="p-2 border text-blue-800 font-semibold">Req. Qty</th>
-                            <th class="p-2 border text-blue-800 font-semibold">Stock</th>
-                            <th class="p-2 border text-blue-800 font-semibold">Spec. Requirement</th>
-                        </tr>
+            // --- Render blok (header & gaya disamakan) ---
+            const block = document.createElement('div');
+            block.id = divId;
+            block.className = 'bg-gray-50 p-4 rounded-lg mb-4';
+            block.innerHTML = `
+                <div class="flex justify-between items-center mb-2">
+                <h4 class="text-md font-semibold">Routing Overview</h4>
+                </div>
+                <div class="overflow-x-auto">
+                <table class="table-auto w-full text-xs border">
+                    <thead>
+                    <tr>
+                        <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">No.</th>
+                        <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">ACTIVITY (VORNR)</th>
+                        <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">CONTROL KEY (STEUS)</th>
+                        <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">DESCRIPTION (KTEXT)</th>
+                        <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">NEW WORKCENTER</th>
+                        <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">PV1</th>
+                        <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">PV2</th>
+                        <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">PV3</th>
+                        <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">ACTION</th>
+                    </tr>
                     </thead>
-                    <tbody>
-                        ${tableRows}
-                    </tbody>
+                    <tbody>${rowsHtml}</tbody>
                 </table>
+                </div>
             `;
-        }
 
-        function toggleAdditionalData(key, contentGenerator) {
-            const container = document.getElementById('additional-data-container');
-            if (currentActiveKey === key) {
-                container.innerHTML = '';
-                currentActiveKey = null;
-            } else {
-                currentActiveKey = key;
-                container.innerHTML = `<div class="bg-gray-50  p-4 rounded-lg shadow-inner">${contentGenerator()}</div>`;
+            container.innerHTML = '';
+            container.appendChild(block);
+
+            // Fallback agar tidak error kalau handler modal belum didefinisikan
+            if (typeof openModalEditWC !== 'function') {
+                window.openModalEditWC = (aufnr, vornr, arbpl='') =>
+                alert('openModalEditWC belum didefinisikan di halaman ini.');
+            }
+            if (typeof openModalChangePV !== 'function') {
+                window.openModalChangePV = (aufnr, verid) =>
+                alert('openModalChangePV belum didefinisikan di halaman ini.');
             }
         }
         
@@ -918,7 +1092,7 @@
                 <td class="px-3 py-2 border text-center">${i + 1}</td>
                 <td class="px-3 py-2 border">${sanitize(r.KDAUF || '-')}</td>
                 <td class="px-3 py-2 border">${(r.KDPOS || '').toString().replace(/^0+/, '')}</td>
-                <td class="px-3 py-2 border font-mono">${(r.MATFG || '').toString().replace(/^0+/, '') || '-'}</td>
+                <td class="px-3 py-2 border ">${(r.MATFG || '').toString().replace(/^0+/, '') || '-'}</td>
                 <td class="px-3 py-2 border">${sanitize(r.MAKFG || '-')}</td>
                 <td class="px-3 py-2 border">${formatSapYmd(r.EDATU)}</td>
                 <td class="px-3 py-2 border text-center">${ploCount}</td>
@@ -995,16 +1169,118 @@
                 t3Container.classList.remove('hidden');
             }
         }
+        
+        function openSchedule(aufnrEnc) {
+            const aufnr = decodeURIComponent(aufnrEnc);
+            document.getElementById('scheduleAufnr').value = aufnr;
+            document.getElementById('scheduleDate').value = '';
+            document.getElementById('scheduleTime').value = '00.00.00';
 
-        // function openSalesItem(tr){
-        //     const key = tr.dataset.key;              // "KDAUF-KDPOS"
-        //     // toggle: klik baris yang sama = tutup, baris lain = buka
-        //     if (window.currentSelectedRow === tr) { 
-        //     hideAllDetails(); 
-        //     return; 
-        //     }
-        //     showTData3(key, tr);                     // fungsi yang kamu sudah punya
-        // }
+            const m = document.getElementById('scheduleModal');
+            const o = document.getElementById('scheduleOverlay');
+            const p = document.getElementById('schedulePanel');
+            m.classList.remove('hidden');
+            requestAnimationFrame(() => {
+            o.classList.remove('opacity-0');
+            p.classList.remove('opacity-0','scale-95');
+            });
+        }
+
+        function closeScheduleModal() {
+            const m = document.getElementById('scheduleModal');
+            const o = document.getElementById('scheduleOverlay');
+            const p = document.getElementById('schedulePanel');
+            o.classList.add('opacity-0');
+            p.classList.add('opacity-0','scale-95');
+            setTimeout(() => m.classList.add('hidden'), 150);
+        } 
+
+        function openChangeWcModal(aufnr, vornr, currentWC = '') {
+            // simpan param (buat dipakai nanti saat submit)
+            document.getElementById('changeWcAufnr').value = aufnr || '';
+            document.getElementById('changeWcVornr').value = vornr || '';
+            document.getElementById('changeWcInput').value = '';
+            document.getElementById('changeWcInput').placeholder = `${currentWC}`;
+            document.getElementById('changeWcCurrent').textContent =
+            currentWC ? `Current WC: ${currentWC}` : '';
+
+            // tampilkan modal
+            const m = document.getElementById('changeWcModal');
+            const o = document.getElementById('changeWcOverlay');
+            const p = document.getElementById('changeWcPanel');
+            m.classList.remove('hidden');
+            requestAnimationFrame(() => {
+            o.classList.remove('opacity-0');
+            p.classList.remove('opacity-0','scale-95');
+            });
+        }
+
+        function closeChangeWcModal() {
+            const m = document.getElementById('changeWcModal');
+            const o = document.getElementById('changeWcOverlay');
+            const p = document.getElementById('changeWcPanel');
+            o.classList.add('opacity-0');
+            p.classList.add('opacity-0','scale-95');
+            setTimeout(() => m.classList.add('hidden'), 150);
+        }
+
+        // Tutup saat klik overlay
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'changeWcOverlay') closeChangeWcModal();
+        });
+
+        // Tutup saat tekan ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeChangeWcModal();
+        });
+
+        // Alias sesuai nama lama di tombol (biar kompatibel)
+        if (typeof window.openModalEditWC !== 'function') {
+            window.openModalEditWC = (aufnr, vornr, currentWC='') => openChangeWcModal(aufnr, vornr, currentWC);
+        }
+
+        function openChangePvModal(aufnr, currentPV = '') {
+            // simpan param (buat dipakai nanti saat submit)
+            document.getElementById('changePvAufnr').value = aufnr || '';
+            document.getElementById('changePvInput').value = '';
+            document.getElementById('changePvInput').placeholder = `${currentPV}`;
+            document.getElementById('changePvCurrent').textContent =
+            currentPV ? `Current PV: ${currentPV}` : '';
+
+            // tampilkan modal
+            const m = document.getElementById('changePvModal');
+            const o = document.getElementById('changePvOverlay');
+            const p = document.getElementById('changePvPanel');
+            m.classList.remove('hidden');
+            requestAnimationFrame(() => {
+            o.classList.remove('opacity-0');
+            p.classList.remove('opacity-0', 'scale-95');
+            });
+        }
+
+        function closeChangePvModal() {
+            const m = document.getElementById('changePvModal');
+            const o = document.getElementById('changePvOverlay');
+            const p = document.getElementById('changePvPanel');
+            o.classList.add('opacity-0');
+            p.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => m.classList.add('hidden'), 150);
+        }
+
+        // Tutup saat klik overlay
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'changePvOverlay') closeChangePvModal();
+        });
+
+        // Tutup saat tekan ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeChangePvModal();
+        });
+
+        // Alias agar kompatibel dg tombol lama di tabel routing
+        if (typeof window.openModalChangePV !== 'function') {
+            window.openModalChangePV = (aufnr, currentPV='') => openChangePvModal(aufnr, currentPV);
+        }
 
     </script>
     @endpush

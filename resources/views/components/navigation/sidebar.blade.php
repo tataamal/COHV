@@ -250,8 +250,9 @@
                             @endphp
 
                             <a href="{{ $item['route'] ?? '#' }}" 
-                               class="relative flex items-center p-2.5 rounded-md focus:outline-none group transition-all duration-200 hover:scale-[1.02]"
-                               :class="{
+                                data-loading
+                                class="relative flex items-center p-2.5 rounded-md focus:outline-none group transition-all duration-200 hover:scale-[1.02]"
+                                :class="{
                                    'justify-center': sidebarCollapsed, 
                                    'justify-start': !sidebarCollapsed,
                                    'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg transform scale-[1.02]': {{ $isMenuActive ? 'true' : 'false' }}, 
