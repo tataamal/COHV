@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Data3Controller;
+use App\Http\Controllers\Data1Controller;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\LoginController;
@@ -39,7 +40,13 @@ Route::get('data2/detail/{kode}', [ManufactController::class, 'showDetail'])->na
 
 // route untuk kelola T-DATA3
 Route::get('/release-order/{aufnr}',[Data3Controller::class, 'releaseOrderDirect'])->name('release.order.direct');
-Route::post('/schedule', [Data3Controller::class,'scheduleOrder'])->name('schedule.store');
+Route::post('/reschedule', [Data3Controller::class,'reschedule'])->name('reschedule.store');
+
+// route untuk kelola T-DATA1
+Route::post('/changeWC', [Data1Controller::class,'changeWC'])->name('change-wc');
+Route::post('/changePV', [Data1Controller::class,'changePV'])->name('change-pv');
+
+
 
 // --- Authenticated Routes ---
 Route::middleware('auth')->group(function () {
@@ -52,11 +59,6 @@ Route::middleware('auth')->group(function () {
             default => redirect()->route('login')
         };
     })->name('home');
-
-    // Alternative dashboard route (fallback)
-    Route::get('/dashboard', function () {
-        return redirect()->route('home');
-    })->name('dashboard');
 
     // Logout
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');

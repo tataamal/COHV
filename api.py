@@ -411,7 +411,7 @@ def change_prod_version():
         conn.call('BAPI_TRANSACTION_COMMIT', WAIT='X')
 
         # Delay agar commit selesai
-        time.sleep(4)
+        time.sleep(10)
 
         # Ambil ulang versi setelah perubahan
         after_detail = conn.call('BAPI_PRODORD_GET_DETAIL', NUMBER=aufnr)

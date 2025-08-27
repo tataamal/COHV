@@ -221,7 +221,7 @@
     <div id="scheduleModal" class="fixed inset-0 z-50 hidden">
         <div id="scheduleOverlay" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0 transition-opacity"></div>
 
-        <div id="scheduleOverlay" class="absolute inset-0 flex items-center justify-center p-4">
+        <div id="scheduleContainer" class="absolute inset-0 flex items-center justify-center p-4">
             <div id="schedulePanel"
                 class="w-full max-w-md origin-center transform rounded-2xl bg-white shadow-2xl opacity-0 scale-95 transition-all">
             <div class="flex items-center justify-between border-b px-6 py-4">
@@ -230,7 +230,7 @@
                         class="rounded-lg p-2 text-gray-500 hover:bg-gray-100">✕</button>
             </div>
 
-            <form action="{{ route('schedule.store') }}" method="POST" class="px-6 py-5 space-y-4" id="scheduleForm">
+            <form action="{{ route('reschedule.store') }}" method="POST" class="px-6 py-5 space-y-4" id="scheduleForm">
                 @csrf
                 <input type="hidden" name="aufnr" id="scheduleAufnr">
 
@@ -243,7 +243,7 @@
                 <div>
                 <label class="text-sm text-gray-600">Jam (HH.MM.SS)</label>
                 <input type="text" name="time" id="scheduleTime" placeholder="00.00.00" required
-                        pattern="^\d{2}\.\d{2}\.\d{2}$" inputmode="numeric" autocomplete="off"
+                        pattern="^\d{2}[\.:]\d{2}[\.:]\d{2}$" inputmode="numeric" autocomplete="off"
                         class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500">
                 <p class="text-xs text-gray-500 mt-1">Format 24 jam, contoh: 13.30.00</p>
                 </div>
@@ -257,49 +257,43 @@
             </form>
             </div>
         </div>
-    </div>
+        </div>
 
-    <!-- ========= CHANGE WC MODAL (NO SUBMIT YET) ========= -->
+    <!-- ========= CHANGE WC MODAL ========= -->
     <div id="changeWcModal" class="fixed inset-0 z-50 hidden">
-        <!-- overlay -->
         <div id="changeWcOverlay" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0 transition-opacity"></div>
 
-        <!-- panel -->
         <div class="absolute inset-0 flex items-center justify-center p-4">
             <div id="changeWcPanel"
                 class="w-full max-w-md origin-center transform rounded-2xl bg-white shadow-2xl opacity-0 scale-95 transition-all">
-                <div class="flex items-center justify-between border-b px-6 py-4">
-                    <h3 class="text-lg font-semibold">Change Work Center</h3>
-                    <button type="button" onclick="closeChangeWcModal()"
-                            class="rounded-lg p-2 text-gray-500 hover:bg-gray-100">✕
-                    </button>
+            <div class="flex items-center justify-between border-b px-6 py-4">
+                <h3 class="text-lg font-semibold">Change Work Center</h3>
+                <button type="button" onclick="closeChangeWcModal()" class="rounded-lg p-2 text-gray-500 hover:bg-gray-100">✕</button>
+            </div>
+
+            <!-- FORM POST ke Controller -->
+            <form action="{{ route('change-wc') }}" method="POST" class="px-6 py-5 space-y-4">
+                @csrf
+                <!-- hidden param -->
+                <input type="hidden" id="changeWcAufnr" name="aufnr">
+                <input type="hidden" id="changeWcVornr" name="vornr">
+                <input type="hidden" id="changeWcSequ"  name="sequ" value="0"><!-- isi jika punya sequence -->
+
+                <div>
+                <label for="changeWcInput" class="text-sm text-gray-600">Work Center</label>
+                <input type="text" id="changeWcInput" name="work_center" placeholder="Masukkan Work Center baru"
+                        class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500" required>
+                <p id="changeWcCurrent" class="text-xs text-gray-500 mt-1"></p>
                 </div>
 
-                <div class="px-6 py-5 space-y-4">
-                    <!-- simpan param utk nanti dipakai saat implement submit -->
-                    <input type="hidden" id="changeWcAufnr">
-                    <input type="hidden" id="changeWcVornr">
-
-                    <div>
-                    <label for="changeWcInput" class="text-sm text-gray-600">Work Center</label>
-                    <input type="text" id="changeWcInput" placeholder="Masukkan Work Center baru" value=""
-                            class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500">
-                    <p id="changeWcCurrent" class="text-xs text-gray-500 mt-1"></p>
-                    </div>
+                <div class="border-t pt-4 flex justify-end gap-2">
+                <button type="button" onclick="closeChangeWcModal()" class="rounded-lg px-4 py-2 text-gray-700 hover:bg-gray-100">Tutup</button>
+                <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">Save</button>
                 </div>
-
-                <div class="border-t px-6 py-4 flex justify-end gap-2">
-                    <button type="button" onclick="closeChangeWcModal()"
-                            class="rounded-lg px-4 py-2 text-gray-700 hover:bg-gray-100">Tutup</button>
-                    <!-- tombol dummy; belum melakukan apa-apa -->
-                    <button type="button"
-                            class="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
-                            onclick="/* nanti isi submit */ void(0);">Simpan (N/A)</button>
-                </div>
+            </form>
             </div>
         </div>
     </div>
-
     <!-- ========= CHANGE PV MODAL (NO SUBMIT YET) ========= -->
     <div id="changePvModal" class="fixed inset-0 z-50 hidden">
     <!-- overlay -->
@@ -331,9 +325,9 @@
                 <button type="button" onclick="closeChangePvModal()"
                         class="rounded-lg px-4 py-2 text-gray-700 hover:bg-gray-100">Tutup</button>
                 <!-- tombol dummy; belum melakukan apa-apa -->
-                <button type="button"
+                <button type="button" id="changePvSubmitBtn"
                         class="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
-                        onclick="/* nanti isi submit */ void(0);">Simpan (N/A)</button>
+                        onclick="submitChangePv()">Simpan</button>
             </div>
         </div>
     </div>
@@ -836,9 +830,10 @@
 
             // --- Build rows ---
             const rowsHtml = data.map((t1, i) => {
-                const pv1Class = (t1.VERID === '0001') ? 'bg-blue-100 font-semibold text-green-900' : '';
-                const pv2Class = (t1.VERID === '0002') ? 'bg-blue-100 font-semibold text-green-900' : '';
-                const pv3Class = (t1.VERID === '0003') ? 'bg-blue-100 font-semibold text-green-900' : '';
+                const ver = String(t1.VERID ?? '').trim().padStart(4,'0');
+                const pv1Class = ver === '0001' ? 'bg-blue-100 font-semibold text-green-900' : '';
+                const pv2Class = ver === '0002' ? 'bg-blue-100 font-semibold text-green-900' : '';
+                const pv3Class = ver === '0003' ? 'bg-blue-100 font-semibold text-green-900' : '';
                 const newWC = renderNewWC(t1);
 
                 return `
@@ -907,6 +902,81 @@
                 window.openModalChangePV = (aufnr, verid) =>
                 alert('openModalChangePV belum didefinisikan di halaman ini.');
             }
+        }
+
+        function showTData4ByAufnr(aufnr){
+            const container = document.getElementById('additional-data-container');
+            const blockId   = `tdata4-${aufnr}`;
+
+            // toggle: jika sudah muncul, tutup & tampilkan kembali semua baris T_DATA3
+            const existing = document.getElementById(blockId);
+            if (existing){
+                existing.remove();
+                document.querySelectorAll('#tdata3-body tr').forEach(row => row.classList.remove('hidden'));
+                return;
+            }
+
+            // ambil data komponen per-AUFNR
+            const data = (allTData4ByAufnr && allTData4ByAufnr[aufnr]) ? allTData4ByAufnr[aufnr] : [];
+            if (!Array.isArray(data) || data.length === 0){
+                alert('Tidak ada component list (T_DATA4) untuk order ini.');
+                return;
+            }
+
+            // hanya tampilkan baris T_DATA3 yang terkait AUFNR ini
+            document.querySelectorAll('#tdata3-body tr').forEach(row => {
+                if (!row.textContent.includes(aufnr)) row.classList.add('hidden');
+                else row.classList.remove('hidden');
+            });
+
+            // helper aman untuk teks
+            const esc = (v) => {
+                const d = document.createElement('div');
+                d.textContent = String(v ?? '-');
+                return d.innerHTML;
+            };
+            const ltrim0 = (s) => String(s ?? '').replace(/^0+/, '');
+
+            // bikin rows komponen (field disesuaikan dengan nama dari T_DATA4 kamu)
+            const rowsHtml = data.map((c, i) => `
+                <tr>
+                <td class="border px-2 py-1 text-center">${i+1}</td>
+                <td class="border px-2 py-1 ">${ltrim0(c.MATNR)}</td>
+                <td class="border px-2 py-1">${esc(c.MAKTX)}</td>
+                <td class="border px-2 py-1 text-center">${c.BDMNG ?? c.MENGE ?? '-'}</td>
+                <td class="border px-2 py-1 text-center">${c.ENMNG ?? '-'}</td>
+                <td class="border px-2 py-1 text-center">${esc(c.MEINS || '-')}</td>
+                </tr>
+            `).join('');
+
+            // render blok tabel komponen
+            const block = document.createElement('div');
+            block.id = blockId;
+            block.className = 'bg-gray-50 p-4 rounded-lg mb-4';
+            block.innerHTML = `
+                <div class="flex justify-between items-center mb-2">
+                <h4 class="text-md font-semibold">Component List (T_DATA4) — AUFNR: ${esc(aufnr)}</h4>
+                </div>
+                <div class="overflow-x-auto">
+                <table class="table-auto w-full text-sm border">
+                    <thead>
+                    <tr>
+                        <th class="px-3 py-2 border text-md bg-blue-100 text-blue-900 font-semibold">No.</th>
+                        <th class="px-3 py-2 border text-md bg-blue-100 text-blue-900 font-semibold">Material</th>
+                        <th class="px-3 py-2 border text-md bg-blue-100 text-blue-900 font-semibold">Description</th>
+                        <th class="px-3 py-2 border text-md bg-blue-100 text-blue-900 font-semibold">Req. Qty</th>
+                        <th class="px-3 py-2 border text-md bg-blue-100 text-blue-900 font-semibold">Stoc</th>
+                        <th class="px-3 py-2 border text-md bg-blue-100 text-blue-900 font-semibold">Spec. Procurement</th>
+                    </tr>
+                    </thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table>
+                </div>
+            `;
+
+            // kosongkan container & tampilkan blok baru (atau kamu bisa append kalau mau ditumpuk)
+            container.innerHTML = '';
+            container.appendChild(block);
         }
         
         // --- Fungsi utilitas dan bulk action (disederhanakan) ---
@@ -1281,6 +1351,162 @@
         if (typeof window.openModalChangePV !== 'function') {
             window.openModalChangePV = (aufnr, currentPV='') => openChangePvModal(aufnr, currentPV);
         }
+
+        function openScheduleModal(aufnr) {
+            const modal  = document.getElementById('scheduleModal');
+            const panel  = document.getElementById('schedulePanel');
+            const overlay= document.getElementById('scheduleOverlay');
+
+            document.getElementById('scheduleAufnr').value = aufnr;
+
+            // Default tanggal & waktu sekarang (local)
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm   = String(now.getMonth()+1).padStart(2,'0');
+            const dd   = String(now.getDate()).padStart(2,'0');
+            const HH   = String(now.getHours()).padStart(2,'0');
+            const MM   = String(now.getMinutes()).padStart(2,'0');
+            const SS   = String(now.getSeconds()).padStart(2,'0');
+
+            document.getElementById('scheduleDate').value = `${yyyy}-${mm}-${dd}`;
+            document.getElementById('scheduleTime').value = `${HH}.${MM}.${SS}`;
+
+            modal.classList.remove('hidden');
+            requestAnimationFrame(() => {
+            overlay.classList.remove('opacity-0');
+            panel.classList.remove('opacity-0','scale-95');
+            });
+        }
+
+        function closeScheduleModal() {
+            const modal  = document.getElementById('scheduleModal');
+            const panel  = document.getElementById('schedulePanel');
+            const overlay= document.getElementById('scheduleOverlay');
+
+            overlay.classList.add('opacity-0');
+            panel.classList.add('opacity-0','scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 150);
+        }
+
+        // Auto-format jam: izinkan "133000" → "13.30.00"; "13:3" → "13:30:00"
+        (function() {
+            const el = document.getElementById('scheduleTime');
+            if (!el) return;
+
+            el.addEventListener('input', (e) => {
+            let v = e.target.value.replace(/[^\d]/g,''); // ambil digit saja
+            if (v.length > 6) v = v.slice(0,6);
+            if (v.length >= 5)       e.target.value = v.replace(/(\d{2})(\d{2})(\d{1,2})/, '$1.$2.$3');
+            else if (v.length >= 3)  e.target.value = v.replace(/(\d{2})(\d{1,2})/, '$1.$2');
+            else                     e.target.value = v;
+        });
+
+         // Pastikan saat submit format jadi HH.MM.SS sesuai pattern (controller akan ubah ke ":")
+        const form = document.getElementById('scheduleForm');
+        form.addEventListener('submit', () => {
+        // trimming kecil
+        el.value = el.value.trim();
+        });
+    })();
+
+    async function submitChangePv() {
+        const btn   = document.getElementById('changePvSubmitBtn');
+        const aufnr = (document.getElementById('changePvAufnr').value || '').trim();
+        let   pv    = (document.getElementById('changePvInput').value || '').trim();
+
+        if (!aufnr)  { return (window.notify?.('AUFNR tidak ditemukan.', 'error') || alert('AUFNR tidak ditemukan.')); }
+        if (!pv)     { return (window.notify?.('Isi Production Version (PV) dahulu.', 'error') || alert('Isi PV dahulu.')); }
+
+        // normalisasi input PV
+        const verid = pv.replace(/\s+/g, '').padStart(4, '0');              // <-- TRIM & pad
+
+        const oldLabel = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Menyimpan...';
+
+        try {
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+            const url  = "{{ route('change-pv') }}";
+
+            const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',                                     // <-- tambah Accept
+                'X-CSRF-TOKEN': csrf
+            },
+            body: JSON.stringify({ AUFNR: aufnr, PROD_VERSION: verid })
+            });
+
+            const raw = await res.text();                                         // <-- robust parse JSON
+            let data = {};
+            try { data = raw ? JSON.parse(raw) : {}; }
+            catch { throw new Error(`Non-JSON response: ${raw.slice(0,120)}...`); }
+
+            if (!res.ok) {
+            const msg = data?.error || data?.message || `HTTP ${res.status}`;
+            throw new Error(msg);
+            }
+
+            const beforeV = (data.before_version ?? '').toString().trim();
+            const afterV  = (data.after_version  ?? verid).toString().trim();
+
+            // normalisasi: ambil digit saja, pad ke 4 digit
+            const normalizeVerid = v => {
+            const digits = String(v ?? '').replace(/[^\d]/g,''); // buang spasi/tanda lain
+            return digits.padStart(4,'0').slice(-4);
+            };
+            const newVerid = normalizeVerid(afterV);
+
+            // --- UPDATE STATE & RERENDER ROUTING ---
+            // amankan key AUFNR (raw & padded) jaga-jaga kalau index beda format
+            const keyRaw = String(aufnr);
+            const keyPad = keyRaw.padStart(12,'0');
+
+            [keyRaw, keyPad].forEach(k => {
+            if (Array.isArray(tdata1ByAufnr?.[k])) {
+                // update VERID di semua baris routing utk AUFNR tsb
+                tdata1ByAufnr[k] = tdata1ByAufnr[k].map(t1 => ({ ...t1, VERID: newVerid }));
+            }
+            });
+
+            // hapus blok lama (kalau ada) dan render ulang
+            document.getElementById(`tdata1-${keyRaw}`)?.remove();
+            document.getElementById(`tdata1-${keyPad}`)?.remove();
+            showTData1ByAufnr(keyRaw); // panggil dengan yang sama seperti saat open modal
+
+            // Notifikasi
+            if (typeof Swal !== 'undefined') {
+            await Swal.fire({
+                icon: 'success',
+                title: 'PV berhasil diubah',
+                html: `<div class="text-left">
+                        <div><b>AUFNR:</b> ${aufnr}</div>
+                        <div><b>Sebelum:</b> ${beforeV || '-'}</div>
+                        <div><b>Sesudah:</b> ${newVerid || '-'}</div>
+                    </div>`,
+                timer: 2200,
+                showConfirmButton: false
+            });
+            } else {
+            alert(`PV berhasil diubah.\nSebelum: ${beforeV || '-'}\nSesudah: ${newVerid || '-'}`);
+            }
+
+            // Tutup modal
+            typeof closeChangePvModal === 'function' && closeChangePvModal();
+
+        } catch (err) {
+            if (typeof Swal !== 'undefined') {
+            Swal.fire({ icon: 'error', title: 'Gagal', text: err.message || String(err) });
+            } else {
+            alert(err.message || String(err));
+            }
+        } finally {
+            btn.disabled = false;
+            btn.textContent = oldLabel;
+        }
+        }
+
 
     </script>
     @endpush

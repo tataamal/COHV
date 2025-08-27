@@ -348,23 +348,33 @@ class ManufactController extends Controller
             // 2) Upsert & kumpulkan "keep" list
             // ==================================
 
-            // == T_DATA (BARU)
-            $keep0WithKey = []; // [KDAUF, KDPOS]
+            // == T_DATA (BARU) — key: (WERKSX, KUNNR, NAME1)
+            $keep0 = []; // simpan kombinasi [WERKSX, KUNNR, NAME1] untuk tahap delete
+
             foreach ($T_DATA as $row) {
                 $row['WERKSX'] = $kode;
                 if (empty($row['EDATU'])) $row['EDATU'] = null;
 
+                // normalisasi kunci
+                $kunnr = trim((string)($row['KUNNR'] ?? ''));
+                $name1 = trim((string)($row['NAME1'] ?? ''));
+
+                // jika dua-duanya kosong, skip agar tidak ada baris tanpa kunci
+                if ($kunnr === '' && $name1 === '') {
+                    Log::warning('Skip T_DATA tanpa kunci (KUNNR & NAME1 kosong)', ['row' => $row]);
+                    continue;
+                }
+
+                // pastikan field kunci ikut tersimpan sesuai normalisasi
+                $row['KUNNR'] = $kunnr !== '' ? $kunnr : null;
+                $row['NAME1'] = $name1 !== '' ? $name1 : null;
+
                 try {
-                    if (!empty($row['KDAUF']) && !empty($row['KDPOS'])) {
-                        // selaraskan jika kamu pakai unique (WERKSX,KDAUF,KDPOS)
-                        ProductionTData::updateOrCreate(
-                            ['WERKSX' => $kode, 'KDAUF' => $row['KDAUF'], 'KDPOS' => $row['KDPOS']],
-                            $row
-                        );
-                        $keep0WithKey[] = [$row['KDAUF'], $row['KDPOS']];
-                    } else {
-                        ProductionTData::create($row);
-                    }
+                    ProductionTData::updateOrCreate(
+                        ['WERKSX' => $kode, 'KUNNR' => $row['KUNNR'], 'NAME1' => $row['NAME1']],
+                        $row
+                    );
+                    $keep0[] = [$kode, $row['KUNNR'], $row['NAME1']];
                 } catch (\Exception $e) {
                     Log::warning('Gagal simpan T_DATA', ['row' => $row, 'error' => $e->getMessage()]);
                 }
@@ -447,14 +457,20 @@ class ManufactController extends Controller
             // 3) DELETE yang tidak terpakai
             // ==============================
 
-            // --- T_DATA (per plant, ini full refresh versi fungsi ini)
+            // --- T_DATA (per plant) — bersihkan yang tidak ada di payload
             $existing0 = ProductionTData::where('WERKSX', $kode)->get();
-            $toKeep0WithKey = collect($keep0WithKey);
+            $toKeep0 = collect($keep0); // elemen: [$WERKSX, $KUNNR, $NAME1]
+
             foreach ($existing0 as $item) {
-                if (!empty($item->KDAUF) && !empty($item->KDPOS)) {
-                    if (!$toKeep0WithKey->contains(fn($v) => $v[0] === $item->KDAUF && $v[1] === $item->KDPOS)) {
-                        $item->delete();
-                    }
+                $match = $toKeep0->contains(function ($v) use ($item) {
+                    // samakan representasi null/empty
+                    $kunnr = $item->KUNNR ?? null;
+                    $name1 = $item->NAME1 ?? null;
+                    return $v[0] === $item->WERKSX && $v[1] === $kunnr && $v[2] === $name1;
+                });
+
+                if (!$match) {
+                    $item->delete();
                 }
             }
 

@@ -1,10 +1,10 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Support\Facades\Http;
 use App\Models\ProductionTData3;
-
+use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
@@ -133,6 +133,123 @@ class Data3Controller extends Controller
             return back()->withErrors([
                 'sap' => 'Exception: '.$e->getMessage()
             ])->withInput();
+        }
+    }
+
+    public function reschedule(Request $request)
+    {
+        // Validasi basic
+        $data = $request->validate([
+            'aufnr' => 'required|string',
+            'date'  => 'required|date',       // dari <input type="date"> -> YYYY-MM-DD
+            'time'  => ['required','regex:/^\d{2}[\.:]\d{2}[\.:]\d{2}$/'], // 13.30.00 atau 13:30:00
+        ], [
+            'time.regex' => 'Format jam harus HH.MM.SS atau HH:MM:SS',
+        ]);
+
+        // Normalisasi format yang diharapkan Flask:
+        // DATE => YYYYMMDD, TIME => HH:MM:SS
+        $dateYmd   = Carbon::parse($data['date'])->format('Ymd');
+        $timeColon = str_replace('.', ':', $data['time']);
+
+        // Ambil kredensial SAP dari session (diset saat login)
+        $sapUser = Session::get('username');  // pastikan kamu set ini saat login
+        $sapPass = Session::get('password');
+
+        if (!$sapUser || !$sapPass) {
+            return back()->withErrors(['msg' => 'SAP credential tidak tersedia di sesi. Silakan login SAP kembali.']);
+        }
+
+        try {
+            $flaskBase = rtrim(config('services.flask.base_url', env('FLASK_BASE_URL', 'http://127.0.0.1:8006')), '/');
+
+            $response = Http::withHeaders([
+                    'X-SAP-Username' => $sapUser,
+                    'X-SAP-Password' => $sapPass,
+                    'Accept'         => 'application/json',
+                ])
+                ->timeout(30)
+                ->post($flaskBase.'/api/schedule_orderr', [
+                    'AUFNR' => $data['aufnr'],
+                    'DATE'  => $dateYmd,
+                    'TIME'  => $timeColon,
+                ]);
+
+            if ($response->failed()) {
+                return back()->withErrors(['msg' => 'Gagal menghubungi API Scheduler: '.$response->body()]);
+            }
+
+            $payload = $response->json();
+
+            // Tangkap RETURN dari SAP untuk cek error/warning
+            $sapReturn = $payload['sap_return'] ?? $payload['RETURN'] ?? [];
+            $detail    = $payload['detail_return'] ?? [];
+            $applog    = $payload['application_log'] ?? [];
+
+            // Cari ada TYPE = 'E'?
+            $hasError = collect($sapReturn)->contains(function ($row) {
+                return isset($row['TYPE']) && Str::upper($row['TYPE']) === 'E';
+            });
+
+            if ($hasError) {
+                // Satukan pesan error dari SAP agar mudah dibaca
+                $msg = collect($sapReturn)
+                        ->filter(fn($r) => isset($r['TYPE']) && Str::upper($r['TYPE']) === 'E')
+                        ->map(function ($r) {
+                            $id  = $r['ID']   ?? '';
+                            $num = $r['NUMBER'] ?? '';
+                            $txt = $r['MESSAGE'] ?? json_encode($r);
+                            return trim("[$id $num] $txt");
+                        })
+                        ->implode("\n");
+
+                return back()->withErrors(['msg' => "SAP menolak penjadwalan:\n".$msg])->withInput();
+            }
+
+            // Jika tidak ada error, tampilkan success (bisa ditangkap oleh SweetAlert)
+            return back()->with('success', 'Production Order berhasil dijadwalkan/di-reschedule.')
+                         ->with('sap_raw', $payload); // opsional: untuk debug di halaman
+                         
+        } catch (\Throwable $e) {
+            return back()->withErrors(['msg' => 'Exception: '.$e->getMessage()]);
+        }
+    }
+
+    public function changeWc(Request $request)
+    {
+        $request->validate([
+            'aufnr'       => 'required|string',
+            'vornr'       => 'required|string',
+            'work_center' => 'required|string',
+            'sequ'        => 'nullable|string',
+        ]);
+
+        $payload = [
+            'IV_AUFNR'    => $request->aufnr,
+            'IV_COMMIT'   => 'X',
+            'IT_OPERATION'=> [[
+                'SEQUEN'   => $request->sequ ?: '0',
+                'OPER'     => $request->vornr,
+                'WORK_CEN' => $request->work_center,
+                'W'        => 'X',
+            ]],
+        ];
+
+        try {
+            $resp = \Illuminate\Support\Facades\Http::withHeaders([
+                    'X-SAP-Username' => session('username'),
+                    'X-SAP-Password' => session('password'),
+                ])
+                ->timeout(30)
+                ->post(env('FLASK_BASE_URL', 'http://127.0.0.1:8006').'/api/save_edit', $payload);
+
+            if (!$resp->successful()) {
+                return response()->json(['ok'=>false, 'error'=>$resp->json('error') ?? 'Flask error'], $resp->status());
+            }
+
+            return response()->json(['ok'=>true, 'result'=>$resp->json()]);
+        } catch (\Throwable $e) {
+            return response()->json(['ok'=>false, 'error'=>$e->getMessage()], 500);
         }
     }
 
