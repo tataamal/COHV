@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string('MAKTX')->nullable();
             $table->string('MEINS')->nullable();
             $table->string('BAUGR')->nullable();
-            $table->string('WERKS')->nullable();
+            $table->string('WERKSX')->nullable();
             $table->double('BDMNG', 15, 3)->nullable();
             $table->double('KALAB', 15, 3)->nullable();
             $table->string('SOBSL')->nullable();

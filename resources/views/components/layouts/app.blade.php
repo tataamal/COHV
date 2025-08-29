@@ -14,6 +14,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <!-- Custom Styles -->
     <style>
@@ -101,54 +102,6 @@
         </style>
     
     <!-- Additional Styles -->
-    <script>
-        (function () {
-        const overlay = document.getElementById('global-loading');
-        if (!overlay) return;
-
-        const show = () => overlay.classList.remove('hidden');
-        const hide = () => overlay.classList.add('hidden');
-
-        // A) Klik pada elemen dengan [data-loading]
-        document.addEventListener('click', (e) => {
-            const trigger = e.target.closest('[data-loading]');
-            if (!trigger) return;
-
-            // Abaikan open-in-new-tab / klik non-left / target=_blank
-            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-            if (e.button !== 0) return;
-            if (trigger.getAttribute('target') === '_blank') return;
-
-            // Opsional: cegah double click pada button
-            if (trigger.tagName === 'BUTTON') {
-            trigger.disabled = true;
-            trigger.classList.add('opacity-70', 'pointer-events-none');
-            }
-
-            show();
-        }, { passive: true });
-
-        // B) Submit form apa pun
-        document.addEventListener('submit', (e) => {
-            const form = e.target;
-            if (!form.matches('form')) return;
-
-            const btn = form.querySelector('button[type="submit"][data-loading]');
-            if (btn) {
-            btn.disabled = true;
-            btn.classList.add('opacity-70', 'pointer-events-none');
-            }
-            show();
-        }, true);
-
-        // C) Pindah halaman (redirect server-side)
-        window.addEventListener('beforeunload', show);
-
-        // Hooks optional untuk AJAX manual:
-        window.addEventListener('loading:show', show);
-        window.addEventListener('loading:hide', hide);
-        })();
-        </script>
     @stack('styles')
 
 </head>
@@ -251,8 +204,6 @@
         window.addEventListener('loading:hide', hide);
     })();
     </script>
-
-    
     @stack('scripts')
 </body>
 </html>

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\KorlapController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Data4Controller;
 use App\Http\Controllers\ManufactController;
 
 /*
@@ -14,6 +15,67 @@ use App\Http\Controllers\ManufactController;
 | Web Routes
 |--------------------------------------------------------------------------
 */
+
+// Routing untuk user yang belum melakukan register
+Route::middleware('guest')->group(function (){
+
+    Route::get('/', [LoginController::class, 'showLoginForm'])->name('login');
+    // Routing untuk login masing-masing role
+    Route::post('/login/korlap', [LoginController::class, 'loginKorlap'])->name('login.korlap');
+    Route::post('/login/admin', [LoginController::class, 'loginAdmin'])->name('login.admin');
+    // routing untuk mendapatkan sap_id otomatis ketika korlap login
+    Route::post('api/get-sap-user-id', [LoginController::class, 'getSapUserByKode'])->name('get_sap_user_id');
+    
+});
+
+Route::middleware('auth')->group(function (){
+
+    // Routing Admin
+    Route::get('/dashboard_all', [AdminController::class, 'AdminDashboard'])->name('dashboard_all');
+    Route::get('/dashboard/{kode}', [AdminController::class, 'index'])->name('dashboard.show');
+    Route::get('data2/{kode}', [ManufactController::class, 'DetailData2'])->name('detail.data2');
+    Route::get('data2/detail/{kode}', [ManufactController::class, 'showDetail'])->name('show.detail.data2');
+
+    // Routing Korlap
+
+    // Routing Manufact
+    Route::post('/create_prod_order', [ManufactController::class, 'convertPlannedOrder'])->name('convert-button');
+    Route::post('/component/add', [Data4Controller::class, 'addComponent'])->name('component.add');
+    Route::post('/component/delete-bulk', [Data4Controller::class, 'deleteBulkComponents'])->name('component.delete.bulk');
+
+    // Routing Logout
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+    // route untuk kelola T-DATA3
+    Route::get('/release-order/{aufnr}',[Data3Controller::class, 'releaseOrderDirect'])->name('release.order.direct');
+    Route::post('/reschedule', [Data3Controller::class,'reschedule'])->name('reschedule.store');
+
+    // route untuk kelola T-DATA1
+    Route::post('/changeWC', [Data1Controller::class,'changeWC'])->name('change-wc');
+    Route::post('/changePV', [Data1Controller::class,'changePV'])->name('change-pv');
+
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // --- Public Routes (Guest Only) ---
 Route::middleware('guest')->group(function () {
@@ -25,11 +87,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/login/admin', [LoginController::class, 'loginAdmin'])->name('login.admin');
 });
 
-// --- API Routes (Public for frontend functionality) ---
-Route::prefix('api')->name('api.')->group(function () {
-    Route::post('/get-sap-user-id', [LoginController::class, 'getSapUserByKode'])->name('get_sap_user_id');
-});
-Route::post('/create_prod_order', [ManufactController::class, 'convertPlannedOrder'])->name('convert-button');
+
 
 // route untuk kelola menu admin
 Route::get('/dashboard_all', [AdminController::class, 'AdminDashboard'])->name('dashboard_all');
@@ -38,13 +96,7 @@ Route::get('data2/{kode}', [ManufactController::class, 'DetailData2'])->name('de
 Route::get('data2/detail/{kode}', [ManufactController::class, 'showDetail'])->name('show.detail.data2');
 
 
-// route untuk kelola T-DATA3
-Route::get('/release-order/{aufnr}',[Data3Controller::class, 'releaseOrderDirect'])->name('release.order.direct');
-Route::post('/reschedule', [Data3Controller::class,'reschedule'])->name('reschedule.store');
 
-// route untuk kelola T-DATA1
-Route::post('/changeWC', [Data1Controller::class,'changeWC'])->name('change-wc');
-Route::post('/changePV', [Data1Controller::class,'changePV'])->name('change-pv');
 
 
 
@@ -61,7 +113,7 @@ Route::middleware('auth')->group(function () {
     })->name('home');
 
     // Logout
-    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+    
     // Route::match(['get', 'post'], 'data/refresh', [ManufactController::class, 'dataRefresh'])->name('data.refresh');
 
     // --- Admin Routes ---

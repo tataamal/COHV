@@ -192,6 +192,75 @@ def sap_combined():
         return jsonify({'error': str(ve)}), 401
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/refresh-pro', methods=['GET'])
+def refresh_single_pro():
+    
+    try:
+        plant = (request.args.get('plant') or request.args.get('WERKS') or '').strip()
+        aufnr = (request.args.get('AUFNR') or request.args.get('order') or '').strip()
+
+        if not plant:
+            return jsonify({'error': 'Missing plant parameter'}), 400
+        if not aufnr:
+            return jsonify({'error': 'Missing AUFNR parameter'}), 400
+        if ',' in aufnr:
+            return jsonify({'error': 'Only single AUFNR is allowed.'}), 400
+
+        def pad12(v: str) -> str:
+            v = str(v or '')
+            return v if len(v) >= 12 else v.zfill(12)
+
+        a12 = pad12(aufnr)
+
+        username, password = get_credentials()
+        conn = connect_sap(username, password)
+
+        res = conn.call('Z_FM_YPPR074Z', P_WERKS=plant, P_AUFNR=a12)
+
+        # --- helpers ---
+        def as_list(x):
+            if not x:
+                return []
+            return x if isinstance(x, list) else [x]
+
+        def map_werks(lst, fallback_plant):
+            """
+            Map field SAP 'WERK' -> 'WERKS' agar selaras dengan kolom MySQL.
+            Jika tidak ada keduanya, isi dengan fallback_plant.
+            """
+            out = []
+            for row in as_list(lst):
+                if isinstance(row, dict):
+                    row = dict(row)  # shallow copy
+                    row['WERKS'] = row.get('WERKS') or row.get('WERK') or fallback_plant
+                    # hapus WERK untuk hindari kebingungan di sisi Laravel/DB
+                    row.pop('WERK', None)
+                out.append(row)
+            return out
+
+        # --- normalisasi list + mapping WERK->WERKS ---
+        t_data  = map_werks(res.get('T_DATA',  []), plant)
+        t_data1 = map_werks(res.get('T_DATA1', []), plant)
+        t_data2 = map_werks(res.get('T_DATA2', []), plant)
+        t_data3 = map_werks(res.get('T_DATA3', []), plant)
+        t_data4 = map_werks(res.get('T_DATA4', []), plant)
+
+        return jsonify({
+            "plant":  plant,
+            "AUFNR":  a12,
+            "T_DATA":  t_data,
+            "T_DATA1": t_data1,
+            "T_DATA2": t_data2,
+            "T_DATA3": t_data3,
+            "T_DATA4": t_data4,
+        }), 200
+
+    except ValueError as ve:
+        return jsonify({'error': str(ve)}), 401
+    except Exception as e:
+        print("[refresh-pro] exception:", repr(e))
+        return jsonify({'error': str(e)}), 500
     
 @app.route('/api/data_refresh', methods=['GET'])
 def sap_refresh():

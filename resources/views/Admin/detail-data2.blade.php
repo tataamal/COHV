@@ -132,24 +132,27 @@
                                 <thead class="bg-gray-100  text-gray-700">
                                     <tr>
                                         <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold"><input type="checkbox" id="select-all" onchange="toggleSelectAll()" class="mr-1"> Select</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold">No.</th> 
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold">PRO</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold">STATUS</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold">ACTION</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold">MRP</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold">MATERIAL</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold">DESCRIPTION</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold">QTY ORDER</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold">QTY GR</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold">OUTS GR</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold">BASIC START DATE</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold">BASIC FINISH DATE</th>
+                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">No.</th> 
+                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">PRO</th>
+                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">STATUS</th>
+                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">ACTION</th>
+                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">MRP</th>
+                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">MATERIAL</th>
+                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">DESCRIPTION</th>
+                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">QTY ORDER</th>
+                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">QTY GR</th>
+                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">OUTS GR</th>
+                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">BASIC START DATE</th>
+                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">BASIC FINISH DATE</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tdata3-body">
                                     {{-- Data akan diisi oleh JavaScript --}}
                                 </tbody>
                             </table>
+                        </div>
+                        <div id="tdata3-pagination" class="mt-4 flex justify-center items-center gap-2">
+                            {{-- Tombol paginasi akan dibuat oleh JavaScript di sini --}}
                         </div>
                     </div>
 
@@ -162,10 +165,10 @@
         </div>
     </div>
 
-    {{-- Modals --}}
-    {{-- @include('Admin.add-component-modal') --}}
+    @include('Admin.add-component-modal')
     {{-- ========= RESULT MODAL (Tailwind) ========= --}}
-    <div id="resultModal" class="fixed inset-0 z-50 hidden">
+    <div id="resultModal" class="fixed inset-0 hidden">
+
     <!-- overlay -->
     <div id="resultOverlay" class="absolute inset-0 bg-black/40 opacity-0 transition-opacity"></div>
 
@@ -312,12 +315,21 @@
             <div class="px-6 py-5 space-y-4">
                 <!-- simpan param utk nanti dipakai saat submit -->
                 <input type="hidden" id="changePvAufnr">
+                <input type="hidden" id="changePvWerks">
 
                 <div>
-                <label for="changePvInput" class="text-sm text-gray-600">Production Version (PV)</label>
-                <input type="text" id="changePvInput" placeholder="Masukkan PV (mis. 0001)"
-                        class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500">
-                <p id="changePvCurrent" class="text-xs text-gray-500 mt-1"></p>
+                    <label for="changePvInput" class="text-sm text-gray-600">Production Version (PV)</label>
+                    
+                    <!-- SELECT ganti INPUT -->
+                    <select id="changePvInput"
+                            class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500">
+                        <option value="">-- Pilih Production Version --</option>
+                        <option value="0001">PV 0001</option>
+                        <option value="0002">PV 0002</option>
+                        <option value="0003">PV 0003</option>
+                    </select>
+                    
+                    <p id="changePvCurrent" class="text-xs text-gray-500 mt-1"></p>
                 </div>
             </div>
 
@@ -335,23 +347,80 @@
 
     {{-- Other modals here --}}
 
-   @if(session('success'))
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script>
-            Swal.fire({
-                title: 'Sukses',
-                text: "{{ session('success') }}",
-                icon: 'success',
-                showConfirmButton: true,   // tetap ada tombol OK
-                confirmButtonText: 'OK',
-                timer: 5000,              // auto close setelah 10 detik
-                timerProgressBar: true,    // progress bar di bawah
-            });
-            
-        </script>
-    @endif
-
     @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    (function () {
+      const overlay = document.getElementById('global-loading');
+      if (!overlay) return;
+
+      const show = () => overlay.classList.remove('hidden');
+      const hide = () => overlay.classList.add('hidden');
+
+      // A) Klik pada elemen dengan [data-loading]
+      document.addEventListener('click', (e) => {
+        const trigger = e.target.closest('[data-loading]');
+        if (!trigger) return;
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        if (e.button !== 0) return;
+        if (trigger.getAttribute('target') === '_blank') return;
+
+        if (trigger.tagName === 'BUTTON') {
+          trigger.disabled = true;
+          trigger.classList.add('opacity-70', 'pointer-events-none');
+        }
+        show();
+      }, { passive: true });
+
+      // B) Submit form apa pun
+      document.addEventListener('submit', (e) => {
+        const form = e.target;
+        if (!form.matches('form')) return;
+
+        const btn = form.querySelector('button[type="submit"][data-loading]');
+        if (btn) {
+          btn.disabled = true;
+          btn.classList.add('opacity-70', 'pointer-events-none');
+        }
+        show();
+      }, true);
+
+      // C) Pindah halaman (redirect server-side)
+      window.addEventListener('beforeunload', show);
+
+      // Hooks optional untuk AJAX manual:
+      window.addEventListener('loading:show', show);
+      window.addEventListener('loading:hide', hide);
+    })();
+    </script>
+
+    <script>
+      // Toast singkat di pojok
+      window.toast = (icon, title, text='') => Swal.fire({
+        icon, title, text, timer: 2500, timerProgressBar: true,
+        showConfirmButton: false, position: 'top-end', toast: true
+      });
+
+      // Dialog konfirmasi standar
+      window.confirmSwal = (opts={}) => Swal.fire({
+        icon: opts.icon || 'question',
+        title: opts.title || 'Konfirmasi',
+        text: opts.text || '',
+        showCancelButton: true,
+        confirmButtonText: opts.confirmText || 'Ya',
+        cancelButtonText: opts.cancelText || 'Batal'
+      });
+
+      // Notif hasil sukses/gagal (modal biasa)
+      window.resultSwal = async ({success=true, title, html, text}) => {
+        await Swal.fire({
+          icon: success ? 'success' : 'error',
+          title: title || (success ? 'Berhasil' : 'Gagal'),
+          html, text,
+          confirmButtonText: 'OK'
+        });
+      };
+    </script>
     
     <script>
         // Variabel global untuk menyimpan state
@@ -365,6 +434,9 @@
         let currentSOKey = null;
         let currentFilterName = 'all';
         let currentT2Selection = null;
+        let t3CurrentPage = 1;
+        const t3ItemsPerPage = 10;
+
         function padAufnr(v){ const s=String(v||''); return s.length>=12 ? s : s.padStart(12,'0'); }
         const RELEASE_ORDER_URL = @json(route('release.order.direct', ['aufnr' => '__AUFNR__']));
 
@@ -374,20 +446,22 @@
         const allTData1 = @json($allTData1, JSON_HEX_TAG);
         const allTData4ByAufnr = @json($allTData4ByAufnr, JSON_HEX_TAG);
         const tdata1ByAufnr = (() => {
-        const by = {};
-        if (allTData1 && typeof allTData1 === 'object') {
+          const by = {};
+          if (allTData1 && typeof allTData1 === 'object') {
             Object.values(allTData1).forEach(arr => {
-            (arr || []).forEach(t1 => {
+              (arr || []).forEach(t1 => {
                 const a = (t1?.AUFNR || '').toString();
                 if (!a) return;
                 if (!by[a]) by[a] = [];
                 by[a].push(t1);
+              });
             });
-            });
-        }
-        return by;
+          }
+          return by;
         })();
         const allTData4ByPlnum = @json($allTData4ByPlnum, JSON_HEX_TAG);
+
+        function sanitize(str){ const d=document.createElement('div'); d.textContent = String(str||''); return d.innerHTML; }
 
         function openSalesItem(tr) {
             const key = tr.dataset.key; // "KDAUF-KDPOS"
@@ -396,8 +470,8 @@
 
             // klik baris yang sama -> tutup semua detail
             if (currentSelectedRow === tr) {
-            hideAllDetails();
-            return;
+              hideAllDetails();
+              return;
             }
 
             // reset + sembunyikan T_DATA3 dulu
@@ -408,7 +482,7 @@
 
             // tampilkan hanya baris yang diklik, sembunyikan yang lain + header + pager
             document.querySelectorAll('#outstanding-order-container tbody tr')
-            .forEach(row => { if (row !== tr) row.classList.add('hidden'); });
+              .forEach(row => { if (row !== tr) row.classList.add('hidden'); });
             const headerRow = t2Container.querySelector('.flex.justify-between.items-center.mb-4');
             if (headerRow) headerRow.classList.add('hidden');
             const pager = t2Container.querySelector('.mt-4');
@@ -417,92 +491,212 @@
             // render T_DATA2 dulu; T_DATA3 menunggu klik baris T_DATA2
             renderTData2Table(key);
         }
+
+        function renderT3PaginationControls(totalItems) {
+            const paginationContainer = document.getElementById('tdata3-pagination');
+            paginationContainer.innerHTML = ''; // Kosongkan kontainer
+
+            if (totalItems <= t3ItemsPerPage) {
+                if (totalItems > 0) {
+                    paginationContainer.innerHTML = `<span class="text-sm text-gray-500">Showing 1 to ${totalItems} of ${totalItems} results</span>`;
+                }
+                return;
+            }
+
+            const totalPages = Math.ceil(totalItems / t3ItemsPerPage);
+            const currentPage = t3CurrentPage;
+
+            const startItem = (currentPage - 1) * t3ItemsPerPage + 1;
+            const endItem = Math.min(startItem + t3ItemsPerPage - 1, totalItems);
+            let infoHtml = `<span class="text-sm text-gray-500">Showing ${startItem} to ${endItem} of ${totalItems} results</span>`;
+
+            let buttonsHtml = '';
+            const pagePadding = 2;
+            let pagesToShow = new Set();
+
+            pagesToShow.add(1);
+            pagesToShow.add(totalPages);
+
+            for (let i = -pagePadding; i <= pagePadding; i++) {
+                const page = currentPage + i;
+                if (page > 0 && page <= totalPages) {
+                    pagesToShow.add(page);
+                }
+            }
+
+            const sortedPages = Array.from(pagesToShow).sort((a, b) => a - b);
+            let lastPage = 0;
+
+            sortedPages.forEach(page => {
+                if (lastPage > 0 && page - lastPage > 1) {
+                    buttonsHtml += `<span class="px-3 py-1 text-sm text-gray-500">...</span>`;
+                }
+                
+                const isActive = page === currentPage;
+                buttonsHtml += `<button class="px-3 py-1 text-sm rounded-md ${isActive ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'}" onclick="changeT3Page(${page})">${page}</button>`;
+                
+                lastPage = page;
+            });
+
+            // Gabungkan semua bagian menjadi HTML final
+            paginationContainer.innerHTML = `
+                <div class="flex-grow text-left">
+                    ${infoHtml}
+                </div>
+                <div class="flex items-center gap-1">
+                    <button class="px-3 py-1 text-sm rounded-md bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" 
+                            onclick="changeT3Page(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                        &laquo; Prev
+                    </button>
+                    ${buttonsHtml}
+                    <button class="px-3 py-1 text-sm rounded-md bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" 
+                            onclick="changeT3Page(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                        Next &raquo;
+                    </button>
+                </div>
+            `;
+        }
+
+        function togglePaginationDisabled(isDisabled) {
+            const paginationContainer = document.getElementById('tdata3-pagination');
+            if (!paginationContainer) return;
+
+            if (isDisabled) {
+                // Menonaktifkan paginasi: membuatnya buram dan tidak bisa diklik
+                paginationContainer.classList.add('opacity-50', 'pointer-events-none');
+            } else {
+                // Mengaktifkan kembali paginasi
+                paginationContainer.classList.remove('opacity-50', 'pointer-events-none');
+            }
+        }
+
+        /**
+         * FUNGSI BARU: Mengubah halaman TData3
+         */
+        function changeT3Page(page) {
+            t3CurrentPage = page;
+            // Panggil kembali fungsi filter utama, yang akan merender ulang halaman yang benar
+            filterByStatus(currentFilterName); 
+        }
+
+        /**
+         * FUNGSI BARU: Merender isi tabel TData3 untuk halaman saat ini
+         */
+        function renderT3Page(filteredData) {
+            const tbody = document.getElementById('tdata3-body');
+            tbody.innerHTML = '';
+
+            const startIndex = (t3CurrentPage - 1) * t3ItemsPerPage;
+            const endIndex = startIndex + t3ItemsPerPage;
+            const paginatedItems = filteredData.slice(startIndex, endIndex);
+
+            if (paginatedItems.length === 0) {
+                 tbody.innerHTML = `<tr><td colspan="14" class="text-center p-4">Tidak ada data untuk halaman ini.</td></tr>`;
+            } else {
+                paginatedItems.forEach((d3, index) => {
+                    // Gunakan startIndex untuk nomor urut yang benar
+                    const row = createTableRow(d3, startIndex + index + 1);
+                    tbody.appendChild(row);
+                });
+            }
+
+            // Render tombol paginasi berdasarkan jumlah total data yang difilter
+            renderT3PaginationControls(filteredData.length);
+            clearAllSelections();
+        }
+
         /** ====== OPEN MODAL WITH DATA ======
          * Bentuk JSON yang didukung:
          *  Single: { planned_order, plant, production_orders:[...], ... }
          *  Batch : { results: [ { planned_order, plant, production_orders:[...] }, ... ] }
          */
         function showResultModal(data) {
-        // set refreshPlant & refreshOrders agar tombol OK bisa trigger refresh data AUFNR
-        const isBatch = Array.isArray(data?.results);
-        if (isBatch) {
-            const plant = data.results[0]?.plant || data.results[0]?.PLANT || @json($plant);
-            const orders = data.results.flatMap(r => (r.production_orders || [])).filter(Boolean);
-            refreshPlant  = plant;
-            refreshOrders = Array.from(new Set(orders.map(padAufnr)));
-        } else {
-            const plant = data.plant || data.PLANT || @json($plant);
-            const orders = (data.production_orders && data.production_orders.length)
-            ? data.production_orders
-            : (data.order_number ? [data.order_number] : []);
-            refreshPlant  = plant;
-            refreshOrders = Array.from(new Set(orders.map(padAufnr)));
-        }
+          // set refreshPlant & refreshOrders agar tombol OK bisa trigger refresh data AUFNR
+          const isBatch = Array.isArray(data?.results);
+          if (isBatch) {
+              const plant = data.results[0]?.plant || data.results[0]?.PLANT || @json($plant);
+              const orders = data.results.flatMap(r => (r.production_orders || [])).filter(Boolean);
+              refreshPlant  = plant;
+              refreshOrders = Array.from(new Set(orders.map(padAufnr)));
+          } else {
+              const plant = data.plant || data.PLANT || @json($plant);
+              const orders = (data.production_orders && data.production_orders.length)
+                ? data.production_orders
+                : (data.order_number ? [data.order_number] : []);
+              refreshPlant  = plant;
+              refreshOrders = Array.from(new Set(orders.map(padAufnr)));
+          }
 
-        // render UI (gabungan versi ringkasmu)
-        const modalEl   = document.getElementById('resultModal');
-        const overlayEl = document.getElementById('resultOverlay');
-        const panelEl   = document.getElementById('resultPanel');
+          // render UI
+          const modalEl   = document.getElementById('resultModal');
+          const overlayEl = document.getElementById('resultOverlay');
+          const panelEl   = document.getElementById('resultPanel');
 
-        const singleView = document.getElementById('singleView');
-        const batchView  = document.getElementById('batchView');
+          const singleView = document.getElementById('singleView');
+          const batchView  = document.getElementById('batchView');
 
-        if (isBatch) {
-            singleView.classList.add('hidden');
-            batchView.classList.remove('hidden');
-            const tbody = document.getElementById('batchTbody');
-            tbody.innerHTML = '';
-            data.results.forEach((r, i) => {
-            const pros = (r.production_orders || []).filter(Boolean);
-            const tr = document.createElement('tr');
-            tr.className = 'hover:bg-gray-50';
-            tr.innerHTML = `
-                <td class="px-4 py-2">${i+1}</td>
-                <td class="px-4 py-2 font-mono">${sanitize(r.planned_order || r.PLANNED_ORDER || '-')}</td>
-                <td class="px-4 py-2">${sanitize(r.plant || r.PLANT || '-')}</td>
-                <td class="px-4 py-2">
-                ${pros.length ? pros.map(p=>`<span class="inline-flex rounded bg-gray-100 px-2 py-0.5 font-mono text-xs">${sanitize(padAufnr(p))}</span>`).join(' ') : '-'}
-                </td>
-            `;
-            tbody.appendChild(tr);
-            });
-        } else {
-            singleView.classList.remove('hidden');
-            batchView.classList.add('hidden');
-            document.getElementById('plantValue').textContent = data.plant || data.PLANT || '-';
-            const poList = document.getElementById('poList');
-            const pros = (data.production_orders || []).filter(Boolean);
-            poList.innerHTML = pros.length
-            ? pros.map(p=>`<span class="inline-flex rounded bg-gray-100 px-2 py-0.5 font-mono text-xs">${sanitize(padAufnr(p))}</span>`).join('')
-            : '<span class="text-gray-500">-</span>';
-        }
+          if (isBatch) {
+              singleView.classList.add('hidden');
+              batchView.classList.remove('hidden');
+              const tbody = document.getElementById('batchTbody');
+              tbody.innerHTML = '';
+              data.results.forEach((r, i) => {
+                const pros = (r.production_orders || []).filter(Boolean);
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50';
+                tr.innerHTML = `
+                  <td class="px-4 py-2">${i+1}</td>
+                  <td class="px-4 py-2 font-mono">${sanitize(r.planned_order || r.PLANNED_ORDER || '-')}</td>
+                  <td class="px-4 py-2">${sanitize(r.plant || r.PLANT || '-')}</td>
+                  <td class="px-4 py-2">
+                    ${pros.length ? pros.map(p=>`<span class="inline-flex rounded bg-gray-100 px-2 py-0.5 font-mono text-xs">${sanitize(padAufnr(p))}</span>`).join(' ') : '-'}
+                  </td>
+                `;
+                tbody.appendChild(tr);
+              });
+          } else {
+              singleView.classList.remove('hidden');
+              batchView.classList.add('hidden');
+              document.getElementById('plantValue').textContent = data.plant || data.PLANT || '-';
+              const poList = document.getElementById('poList');
+              const pros = (data.production_orders || []).filter(Boolean);
+              poList.innerHTML = pros.length
+                ? pros.map(p=>`<span class="inline-flex rounded bg-gray-100 px-2 py-0.5 font-mono text-xs">${sanitize(padAufnr(p))}</span>`).join('')
+                : '<span class="text-gray-500">-</span>';
+          }
 
-        modalEl.classList.remove('hidden');
-        requestAnimationFrame(() => {
-            overlayEl.classList.remove('opacity-0');
-            panelEl.classList.remove('opacity-0','scale-95');
-        });
+          modalEl.classList.remove('hidden');
+          requestAnimationFrame(() => {
+              overlayEl.classList.remove('opacity-0');
+              panelEl.classList.remove('opacity-0','scale-95');
+              document.getElementById('resultOk')?.addEventListener('click', () => location.reload(), { once:true });
+              document.getElementById('resultClose')?.addEventListener('click', () => closeResultModal(), { once:true });
+          });
         }
 
         function openResultModal(){
-        modalEl.classList.remove('hidden');
-        requestAnimationFrame(() => {
+          const modalEl   = document.getElementById('resultModal');
+          const overlayEl = document.getElementById('resultOverlay');
+          const panelEl   = document.getElementById('resultPanel');
+          modalEl.classList.remove('hidden');
+          requestAnimationFrame(() => {
             overlayEl.classList.remove('opacity-0');
             panelEl.classList.remove('opacity-0','scale-95');
-        });
+          });
         }
         function closeResultModal(){
-        overlayEl.classList.add('opacity-0');
-        panelEl.classList.add('opacity-0','scale-95');
-        setTimeout(() => modalEl.classList.add('hidden'), 150);
+          const modalEl   = document.getElementById('resultModal');
+          const overlayEl = document.getElementById('resultOverlay');
+          const panelEl   = document.getElementById('resultPanel');
+          overlayEl.classList.add('opacity-0');
+          panelEl.classList.add('opacity-0','scale-95');
+          setTimeout(() => modalEl.classList.add('hidden'), 150);
         }
 
         function toggleViews(isBatch){
-        document.getElementById('singleView').classList.toggle('hidden', !!isBatch);
-        document.getElementById('batchView').classList.toggle('hidden', !isBatch);
+          document.getElementById('singleView').classList.toggle('hidden', !!isBatch);
+          document.getElementById('batchView').classList.toggle('hidden', !isBatch);
         }
-
-        function sanitize(str){ const d=document.createElement('div'); d.textContent = String(str||''); return d.innerHTML; }
         
         function hideAllDetails() {
             const t2Container = document.getElementById('outstanding-order-container');
@@ -532,6 +726,8 @@
             currentSOKey = null;
             allRowsData = [];
             clearAllSelections();
+
+            togglePaginationDisabled(false);
         }
 
         function filterByStatus(status) {
@@ -542,6 +738,12 @@
             document.getElementById(`filter-${status}`).classList.add('bg-blue-600', 'text-white');
             document.getElementById(`filter-${status}`).classList.remove('text-gray-700');
 
+            // Jika filter diubah, selalu kembali ke halaman 1
+            if (currentFilterName !== status) {
+                t3CurrentPage = 1;
+                currentFilterName = status;
+            }
+
             let filteredData = allRowsData;
             if (status === 'plo') {
                 filteredData = allRowsData.filter(d3 => d3.PLNUM && !d3.AUFNR);
@@ -551,13 +753,8 @@
                 filteredData = allRowsData.filter(d3 => d3.AUFNR && ['PCNF', 'REL', 'CNF REL'].includes(d3.STATS));
             }
 
-            const tbody = document.getElementById('tdata3-body');
-            tbody.innerHTML = '';
-            filteredData.forEach((d3, index) => {
-                const row = createTableRow(d3, index + 1);
-                tbody.appendChild(row);
-            });
-            clearAllSelections();
+            // Panggil fungsi render yang baru, bukan loop manual di sini
+            renderT3Page(filteredData);
         }
 
         // Fungsi untuk membersihkan string dan escape karakter khusus
@@ -600,12 +797,29 @@
                     <span class="px-2 py-1 rounded-full text-xs font-medium ${statusClass}">${statusDisplay}</span>
                 </td>
                 <td class="px-2 py-1 border">
-                    <div class="flex gap-1">
+                    <div class="flex items-center gap-2">
                         ${d3.AUFNR ? `
-                        <button type="button"
-                            class="bg-yellow-200 text-neutral-900 px-2 py-1 rounded text-xs hover:bg-yellow-700"
+                        <button type="button" title="Reschedule"
+                            class="p-2 leading-none rounded-md text-slate-600 bg-transparent border border-slate-300 
+                                hover:bg-amber-500 hover:text-white hover:border-amber-500 transition-colors"
                             onclick="openSchedule('${encodeURIComponent(padAufnr(d3.AUFNR))}')">
-                            Reschedule
+                            <i class="fa-solid fa-clock-rotate-left fa-fw"></i>
+                        </button>` : ''}
+
+                        ${d3.AUFNR ? `
+                        <button type="button" title="TECO"
+                            class="p-2 leading-none rounded-md text-slate-600 bg-transparent border border-slate-300 
+                                hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-colors"
+                            onclick="openTeco('${encodeURIComponent(padAufnr(d3.AUFNR))}')">
+                            <i class="fa-solid fa-circle-check fa-fw"></i>
+                        </button>` : ''}
+
+                        ${d3.AUFNR ? `
+                        <button type="button" title="Read PP"
+                            class="p-2 leading-none rounded-md text-slate-600 bg-transparent border border-slate-300 
+                                hover:bg-sky-500 hover:text-white hover:border-sky-500 transition-colors"
+                            onclick="openReadPP('${encodeURIComponent(padAufnr(d3.AUFNR))}')">
+                            <i class="fa-solid fa-book-open fa-fw"></i>
                         </button>` : ''}
                     </div>
                 </td>
@@ -623,198 +837,124 @@
             return row;
         }
 
-        // Event listener untuk tombol convert (menggunakan event delegation)
+        // Event listener untuk tombol convert (delegation)
         document.addEventListener('DOMContentLoaded', function() {
             document.addEventListener('click', function(e) {
                 if (e.target.classList.contains('convert-btn')) {
                     const row = e.target.closest('tr');
                     const rowIndex = parseInt(e.target.dataset.rowIndex);
                     const rowData = JSON.parse(row.dataset.rowData);
-                    
                     console.log('Convert clicked for row:', rowIndex, rowData);
                     convertPlannedOrderFixed(rowData);
                 }
             });
         });
         
-        function convertPlannedOrderFixed(d3) {
-        console.log('Convert button clicked', d3);
+        // FIX: jadikan async & gunakan await sepenuhnya
+        async function convertPlannedOrderFixed(d3) {
+          console.log('Convert button clicked', d3);
 
-        const plnum = d3.PLNUM;
-        const auart = d3.AUART;
-        const plant = @json($plant); // aman: akan jadi string "A100" misalnya
+          const plnum = d3.PLNUM; 
+          const auart = d3.AUART;
+          const plant = @json($plant);
 
-        if (!plnum || !auart) {
+          if (!plnum || !auart) {
             console.error('Missing data:', { plnum, auart });
-            return alert('PLNUM atau Order Type (AUART) tidak ditemukan.');
-        }
+            return toast('error', 'Data tidak lengkap', 'PLNUM atau AUART tidak ditemukan.');
+          }
 
-        if (!confirm(`Konversi Planned Order ${plnum} (Tipe: ${auart})?`)) return;
+          const { isConfirmed } = await confirmSwal({
+            title: 'Konversi Planned Order?',
+            text: `Konversi ${plnum} (Tipe: ${auart})`
+          });
+          if (!isConfirmed) return;
 
-        const loader = document.getElementById('global-loading');
-        if (loader) loader.style.display = 'flex';
+          const loader = document.getElementById('global-loading');
+          if (loader) loader.style.display = 'flex';
 
-        const url = '/create_prod_order';
-        const requestData = {
-            PLANNED_ORDER: plnum,
-            AUART: auart,
-            PLANT: plant
-        };
+          const url = '/create_prod_order';
+          const requestData = { PLANNED_ORDER: plnum, AUART: auart, PLANT: plant };
 
-        console.log('Sending request:', requestData);
+          try {
+            const response = await fetch(url, {
+              method: 'POST',
+              headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(requestData)
+            });
 
-        fetch(url, {
-            method: 'POST',
-            headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestData)
-        })
-        .then(async (response) => {
             const ct = response.headers.get('content-type') || '';
-            const raw = await response.text();            // baca dulu sebagai text
-            if (!ct.includes('application/json')) {       // hindari "Unexpected token <"
-            throw new Error(`Non-JSON response (status ${response.status}): ${raw.slice(0,120)}...`);
+            const raw = await response.text();
+            if (!ct.includes('application/json')) {
+              throw new Error(`Non-JSON response (status ${response.status}): ${raw.slice(0,120)}...`);
             }
             const data = JSON.parse(raw);
             if (!response.ok) {
-            const msg = data?.error || data?.message || response.statusText;
-            throw new Error(msg);
+              const msg = data?.error || data?.message || response.statusText;
+              throw new Error(msg);
             }
-            return data;
-        })
-        .then((data) => {
-            console.log('Response data:', data);
 
-            // Normalisasi bentuk respons dari controller (pass-through Flask)
-            // SINGLE: { planned_order, plant, production_orders:[...], success, messages:[] }
-            // or old:  { success, order_number, return:{...} }
-            // BATCH :  { results:[{ planned_order, plant, production_orders:[...], ... }, ...] }
-
-            // Jika batch langsung tampilkan tabel batch
+            // Batch
             if (Array.isArray(data.results)) {
-            showResultModal({
+              showResultModal({
                 results: data.results.map(r => ({
-                planned_order: r.planned_order || r.PLANNED_ORDER || plnum,
-                plant:        r.plant || r.PLANT || plant,
-                production_orders: (r.production_orders || []).map(padAufnr)
+                  planned_order: r.planned_order || r.PLANNED_ORDER || plnum,
+                  plant:        r.plant || r.PLANT || plant,
+                  production_orders: (r.production_orders || []).map(padAufnr)
                 }))
-            });
-            return;
+              });
+              return;
             }
 
-            // Single: bentukkan data untuk modal sederhana (tanpa form)
+            // Single
             const orders = (data.production_orders && data.production_orders.length)
-            ? data.production_orders.map(padAufnr)
-            : (data.order_number ? [padAufnr(data.order_number)] : []);
-
+              ? data.production_orders.map(padAufnr)
+              : (data.order_number ? [padAufnr(data.order_number)] : []);
             const modalData = {
-            planned_order: data.planned_order || plnum,
-            plant: data.plant || plant,
-            production_orders: orders
+              planned_order: data.planned_order || plnum,
+              plant: data.plant || plant,
+              production_orders: orders
             };
+            showResultModal(modalData);
 
-            showResultModal(modalData);   // buka modal + render Plant & PRO
-        })
-        .catch((error) => {
+          } catch (error) {
             console.error('Convert error:', error);
-            alert('Error: ' + error.message);
-        })
-        .finally(() => {
+            await resultSwal({ success: false, title: 'Konversi gagal', text: error.message || String(error) });
+          } finally {
             if (loader) loader.style.display = 'none';
-        });
+          }
         }
-
-        /* ===== helper: pad AUFNR ke 12 digit ===== */
-        function padAufnr(v) {
-        const s = String(v || '');
-        return s.length >= 12 ? s : s.padStart(12, '0');
-        }
-
-        /* ====== jembatan ke modal Tailwind yang sudah ada ======
-        Kalau kamu pakai modal yang aku kirim sebelumnya, fungsi showResultModal()
-        sudah tersedia. Kalau belum, ini versi ringkas untuk single/batch: */
-        function showResultModal(data) {
-        const modalEl   = document.getElementById('resultModal');
-        const overlayEl = document.getElementById('resultOverlay');
-        const panelEl   = document.getElementById('resultPanel');
-
-        const singleView = document.getElementById('singleView');
-        const batchView  = document.getElementById('batchView');
-
-        if (Array.isArray(data.results)) {
-            // batch
-            singleView.classList.add('hidden');
-            batchView.classList.remove('hidden');
-            const tbody = document.getElementById('batchTbody');
-            tbody.innerHTML = '';
-            data.results.forEach((r,i) => {
-            const pros = (r.production_orders || []).filter(Boolean);
-            const tr = document.createElement('tr');
-            tr.className = 'hover:bg-gray-50';
-            tr.innerHTML = `
-                <td class="px-4 py-2">${i+1}</td>
-                <td class="px-4 py-2 font-mono">${sanitize(r.planned_order) || '-'}</td>
-                <td class="px-4 py-2">${sanitize(r.plant) || '-'}</td>
-                <td class="px-4 py-2">
-                ${pros.length ? pros.map(p=>`<span class="inline-flex rounded bg-gray-100 px-2 py-0.5 font-mono text-xs">${sanitize(p)}</span>`).join(' ') : '-'}
-                </td>
-            `;
-            tbody.appendChild(tr);
-            });
-        } else {
-            // single
-            singleView.classList.remove('hidden');
-            batchView.classList.add('hidden');
-            document.getElementById('plantValue').textContent = data.plant || '-';
-            const poList = document.getElementById('poList');
-            const pros = (data.production_orders || []).filter(Boolean);
-            poList.innerHTML = pros.length
-            ? pros.map(p=>`<span class="inline-flex rounded bg-gray-100 px-2 py-0.5 font-mono text-xs">${sanitize(p)}</span>`).join('')
-            : '<span class="text-gray-500">-</span>';
-        }
-
-        // buka modal (tailwind utility)
-        modalEl.classList.remove('hidden');
-        requestAnimationFrame(() => {
-            overlayEl.classList.remove('opacity-0');
-            panelEl.classList.remove('opacity-0','scale-95');
-        });
-        }
-
-        function sanitize(str){ const d=document.createElement('div'); d.textContent = String(str||''); return d.innerHTML; }
-
 
         // --- Fungsi untuk menampilkan T_DATA1 dan T_DATA4 ---
         function showTData1ByAufnr(aufnr) {
             const container = document.getElementById('additional-data-container');
             const divId = `tdata1-${aufnr}`;
 
-            // Toggle: jika sudah tampil → tutup & kembalikan baris T_DATA3
             const existing = document.getElementById(divId);
             if (existing) {
                 existing.remove();
                 document.querySelectorAll('#tdata3-body tr').forEach(row => row.classList.remove('hidden'));
+                togglePaginationDisabled(false);
                 return;
             }
 
-            // ⬇️ PENTING: Ambil routing dari index per-AUFNR
             const data = (tdata1ByAufnr && tdata1ByAufnr[aufnr]) ? tdata1ByAufnr[aufnr] : [];
 
             if (!Array.isArray(data) || data.length === 0) {
-                alert('Tidak ada data routing ditemukan.');
+                toast('info','Routing kosong','Tidak ada data routing ditemukan.');
                 return;
             }
 
-            // Sembunyikan baris T_DATA3 yang bukan milik AUFNR ini
+            togglePaginationDisabled(true);
+
             document.querySelectorAll('#tdata3-body tr').forEach(row => {
                 if (!row.textContent.includes(aufnr)) row.classList.add('hidden');
                 else row.classList.remove('hidden');
             });
 
-            // --- Logika kolom "NEW WORKCENTER" (mengikuti versi sebelumnya) ---
             const renderNewWC = (t1) => {
                 let defaultPv = '-';
                 if (t1.VERID === '0001') defaultPv = t1.PV1;
@@ -823,12 +963,11 @@
 
                 const defaultPrefix = defaultPv?.split('-')[0]?.trim();
                 if (t1.VERID === '0001' && defaultPrefix && (t1.ARBPL?.trim() === defaultPrefix)) {
-                return '-';
+                  return '-';
                 }
                 return t1.ARBPL || '-';
             };
 
-            // --- Build rows ---
             const rowsHtml = data.map((t1, i) => {
                 const ver = String(t1.VERID ?? '').trim().padStart(4,'0');
                 const pv1Class = ver === '0001' ? 'bg-blue-100 font-semibold text-green-900' : '';
@@ -847,33 +986,32 @@
                     <td class="border text-md px-2 py-1 text-center ${pv2Class}">${t1.PV2 ?? '-'}</td>
                     <td class="border text-md px-2 py-1 text-center ${pv3Class}">${t1.PV3 ?? '-'}</td>
                     <td class="border text-md px-2 py-1">
-                    <div class="flex gap-2">
+                      <div class="flex gap-2">
                         <button class="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-indigo-600"
                                 onclick="openChangeWcModal('${t1.AUFNR}', '${t1.VORNR}', '${t1.ARBPL || ''}')">
-                        Edit WC
+                          Edit WC
                         </button>
                         <button class="bg-orange-600 text-white px-2 py-1 rounded text-xs hover:bg-orange-500"
-                                onclick="openChangePvModal('${t1.AUFNR}', '${t1.VERID || ''}')">
-                        Change PV
+                                onclick="openChangePvModal('${t1.AUFNR}', '${t1.VERID || ''}', '${t1.WERKS || ''}')">
+                          Change PV
                         </button>
-                    </div>
+                      </div>
                     </td>
                 </tr>
                 `;
             }).join('');
 
-            // --- Render blok (header & gaya disamakan) ---
             const block = document.createElement('div');
             block.id = divId;
             block.className = 'bg-gray-50 p-4 rounded-lg mb-4';
             block.innerHTML = `
                 <div class="flex justify-between items-center mb-2">
-                <h4 class="text-md font-semibold">Routing Overview</h4>
+                  <h4 class="text-md font-semibold">Routing Overview</h4>
                 </div>
                 <div class="overflow-x-auto">
-                <table class="table-auto w-full text-xs border">
+                  <table class="table-auto w-full text-xs border">
                     <thead>
-                    <tr>
+                      <tr>
                         <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">No.</th>
                         <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">ACTIVITY (VORNR)</th>
                         <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">CONTROL KEY (STEUS)</th>
@@ -883,53 +1021,42 @@
                         <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">PV2</th>
                         <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">PV3</th>
                         <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">ACTION</th>
-                    </tr>
+                      </tr>
                     </thead>
                     <tbody>${rowsHtml}</tbody>
-                </table>
+                  </table>
                 </div>
             `;
 
             container.innerHTML = '';
             container.appendChild(block);
-
-            // Fallback agar tidak error kalau handler modal belum didefinisikan
-            if (typeof openModalEditWC !== 'function') {
-                window.openModalEditWC = (aufnr, vornr, arbpl='') =>
-                alert('openModalEditWC belum didefinisikan di halaman ini.');
-            }
-            if (typeof openModalChangePV !== 'function') {
-                window.openModalChangePV = (aufnr, verid) =>
-                alert('openModalChangePV belum didefinisikan di halaman ini.');
-            }
         }
 
-        function showTData4ByAufnr(aufnr){
+        function showTData4ByAufnr(aufnr) {
             const container = document.getElementById('additional-data-container');
-            const blockId   = `tdata4-${aufnr}`;
+            const blockId = `tdata4-${aufnr}`;
 
-            // toggle: jika sudah muncul, tutup & tampilkan kembali semua baris T_DATA3
             const existing = document.getElementById(blockId);
-            if (existing){
+            if (existing) {
                 existing.remove();
                 document.querySelectorAll('#tdata3-body tr').forEach(row => row.classList.remove('hidden'));
+
+                togglePaginationDisabled(false);
                 return;
             }
 
-            // ambil data komponen per-AUFNR
+            togglePaginationDisabled(true);
+
+            // Ambil data komponen (T_DATA4)
             const data = (allTData4ByAufnr && allTData4ByAufnr[aufnr]) ? allTData4ByAufnr[aufnr] : [];
-            if (!Array.isArray(data) || data.length === 0){
-                alert('Tidak ada component list (T_DATA4) untuk order ini.');
-                return;
-            }
-
-            // hanya tampilkan baris T_DATA3 yang terkait AUFNR ini
+            
+            // Sembunyikan baris lain di T_DATA3
             document.querySelectorAll('#tdata3-body tr').forEach(row => {
                 if (!row.textContent.includes(aufnr)) row.classList.add('hidden');
                 else row.classList.remove('hidden');
             });
 
-            // helper aman untuk teks
+            // Helper functions
             const esc = (v) => {
                 const d = document.createElement('div');
                 d.textContent = String(v ?? '-');
@@ -937,46 +1064,114 @@
             };
             const ltrim0 = (s) => String(s ?? '').replace(/^0+/, '');
 
-            // bikin rows komponen (field disesuaikan dengan nama dari T_DATA4 kamu)
+            // === Logika Pengambilan Parameter untuk Tombol "Add Component" ===
+            const routingData = (tdata1ByAufnr && tdata1ByAufnr[aufnr]) ? tdata1ByAufnr[aufnr] : [];
+            const vornr = (routingData.length > 0 && routingData[0].VORNR) ? routingData[0].VORNR : '0010'; // Default ke '0010' jika routing kosong
+            const plant = '{{ $plant }}'; // Ambil plant dari Blade
+            // ================================================================
+
             const rowsHtml = data.map((c, i) => `
                 <tr>
-                <td class="border px-2 py-1 text-center">${i+1}</td>
-                <td class="border px-2 py-1 ">${ltrim0(c.MATNR)}</td>
-                <td class="border px-2 py-1">${esc(c.MAKTX)}</td>
-                <td class="border px-2 py-1 text-center">${c.BDMNG ?? c.MENGE ?? '-'}</td>
-                <td class="border px-2 py-1 text-center">${c.ENMNG ?? '-'}</td>
-                <td class="border px-2 py-1 text-center">${esc(c.MEINS || '-')}</td>
+                    <td class="border px-2 py-1 text-center">
+                        <input type="checkbox"
+                            class="component-select-${aufnr}"
+                            data-aufnr="${aufnr}"
+                            data-rspos="${c.RSPOS || i}"
+                            data-material="${ltrim0(c.MATNR)}"
+                            onchange="handleComponentSelect('${aufnr}')">
+                    </td>
+                    <td class="border px-2 py-1 text-center">${i + 1}</td>
+                    <td class="border px-2 py-1">${ltrim0(c.MATNR)}</td>
+                    <td class="border px-2 py-1">${esc(c.MAKTX)}</td>
+                    <td class="border px-2 py-1 text-center">${c.BDMNG ?? c.MENGE ?? '-'}</td>
+                    <td class="border px-2 py-1 text-center">${c.RSPOS ?? '-'}</td>
+                    <td class="border px-2 py-1 text-center">${c.ENMNG ?? '-'}</td>
+                    <td class="border px-2 py-1 text-center">${esc(c.MEINS || '-')}</td>
                 </tr>
             `).join('');
 
-            // render blok tabel komponen
             const block = document.createElement('div');
             block.id = blockId;
             block.className = 'bg-gray-50 p-4 rounded-lg mb-4';
             block.innerHTML = `
                 <div class="flex justify-between items-center mb-2">
-                <h4 class="text-md font-semibold">Component List (T_DATA4) — AUFNR: ${esc(aufnr)}</h4>
+                    <h4 class="text-md font-semibold">Component List (T_DATA4) — AUFNR: ${esc(aufnr)}</h4>
+                    <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 hidden" id="bulk-delete-controls-${aufnr}">
+                            <button type="button" id="bulk-delete-btn-${aufnr}" class="bg-red-600 text-white px-3 py-2 rounded text-sm hover:bg-red-700" onclick="bulkDeleteComponents('${aufnr}')">
+                                Delete Selected (0)
+                            </button>
+                            <button type="button" class="bg-gray-500 text-white px-3 py-2 rounded text-sm hover:bg-gray-600" onclick="clearComponentSelections('${aufnr}')">
+                                Clear All
+                            </button>
+                        </div>
+                        
+                        <button type="button"
+                                class="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700"
+                                onclick="openModalAddComponent('${aufnr}', '${vornr}', '${plant}')">
+                            Add Component
+                        </button>
+                    </div>
                 </div>
                 <div class="overflow-x-auto">
-                <table class="table-auto w-full text-sm border">
-                    <thead>
-                    <tr>
-                        <th class="px-3 py-2 border text-md bg-blue-100 text-blue-900 font-semibold">No.</th>
-                        <th class="px-3 py-2 border text-md bg-blue-100 text-blue-900 font-semibold">Material</th>
-                        <th class="px-3 py-2 border text-md bg-blue-100 text-blue-900 font-semibold">Description</th>
-                        <th class="px-3 py-2 border text-md bg-blue-100 text-blue-900 font-semibold">Req. Qty</th>
-                        <th class="px-3 py-2 border text-md bg-blue-100 text-blue-900 font-semibold">Stoc</th>
-                        <th class="px-3 py-2 border text-md bg-blue-100 text-blue-900 font-semibold">Spec. Procurement</th>
-                    </tr>
-                    </thead>
-                    <tbody>${rowsHtml}</tbody>
-                </table>
+                    <table class="table-auto w-full text-sm border">
+                        <thead>
+                            <tr>
+                                <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold"><input type="checkbox" id="select-all-components-${aufnr}" onchange="toggleSelectAllComponents('${aufnr}')" class="mr-1"> Select</th>
+                                <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">No.</th>
+                                <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">Material</th>
+                                <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">Description</th>
+                                <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">Req. Qty</th>
+                                <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">Total Item</th>
+                                <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">Stock</th>
+                                <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">Spec. Procurement</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHtml.length > 0 ? rowsHtml : `<tr><td colspan="7" class="text-center p-4 text-gray-500">Belum ada komponen. Klik 'Add Component' untuk menambahkan.</td></tr>`}
+                        </tbody>
+                    </table>
                 </div>
             `;
 
-            // kosongkan container & tampilkan blok baru (atau kamu bisa append kalau mau ditumpuk)
             container.innerHTML = '';
             container.appendChild(block);
+        }
+
+        // === handlers bulk select (tetap) ===
+        function handleComponentSelect(aufnr){
+            const checkboxes = document.querySelectorAll(`.component-select-${aufnr}`);
+            const selected = [...checkboxes].filter(cb => cb.checked);
+            const controls = document.getElementById(`bulk-delete-controls-${aufnr}`);
+            const btn = document.getElementById(`bulk-delete-btn-${aufnr}`);
+            if (selected.length > 0){
+                controls.classList.remove('hidden');
+                btn.textContent = `Delete Selected (${selected.length})`;
+            } else {
+                controls.classList.add('hidden');
+            }
+        }
+        function toggleSelectAllComponents(aufnr){
+            const master = document.getElementById(`select-all-components-${aufnr}`);
+            const checkboxes = document.querySelectorAll(`.component-select-${aufnr}`);
+            checkboxes.forEach(cb => cb.checked = master.checked);
+            handleComponentSelect(aufnr);
+        }
+        function clearComponentSelections(aufnr){
+            const master = document.getElementById(`select-all-components-${aufnr}`);
+            if (master) master.checked = false;
+            document.querySelectorAll(`.component-select-${aufnr}`).forEach(cb => cb.checked = false);
+            handleComponentSelect(aufnr);
+        }
+        function bulkDeleteComponents(aufnr){
+            const selected = [...document.querySelectorAll(`.component-select-${aufnr}`)].filter(cb => cb.checked);
+            if (selected.length === 0) return;
+            const payload = selected.map(cb => ({
+                rspos: cb.dataset.rspos,
+                material: cb.dataset.material,
+            }));
+            console.log('Bulk delete ->', aufnr, payload);
+            // TODO: panggil API delete Anda di sini
         }
         
         // --- Fungsi utilitas dan bulk action (disederhanakan) ---
@@ -986,14 +1181,13 @@
             const auart = checkbox.dataset.auart;
 
             if (type === 'PLO') {
-                // Menyimpan data sebagai string JSON agar Set bisa membedakannya
                 const ploDataString = JSON.stringify({ plnum: id, auart: auart });
                 if (checkbox.checked) {
                     selectedPLO.add(ploDataString);
                 } else {
                     selectedPLO.delete(ploDataString);
                 }
-            } else { // Untuk PRO (Release)
+            } else {
                 if (checkbox.checked) {
                     selectedPRO.add(id);
                 } else {
@@ -1031,49 +1225,56 @@
             updateBulkControls();
         }
 
-        function bulkConvertPlannedOrders() {
-            if (selectedPLO.size === 0) return alert('Tidak ada PLO yang dipilih.');
+        async function bulkConvertPlannedOrders() {
+            if (selectedPLO.size === 0) return toast('info','Tidak ada PLO terpilih');
 
-            if (!confirm(`Apakah Anda yakin ingin mengkonversi ${selectedPLO.size} Planned Order?`)) return;
+            const { isConfirmed } = await confirmSwal({
+                title: 'Konversi massal?',
+                text: `Akan mengkonversi ${selectedPLO.size} Planned Order`
+            });
+            if (!isConfirmed) return;
 
             const loader = document.getElementById('global-loading');
             if (loader) loader.style.display = 'flex';
 
             const ploArray = Array.from(selectedPLO).map(itemStr => JSON.parse(itemStr));
 
-            Promise.all(ploArray.map(item => {
-                // MENYESUAIKAN DENGAN API PYTHON
-                const url = '/create_prod_order'; // URL BENAR
-                const requestData = {
-                    PLANNED_ORDER: item.plnum,
-                    AUART: item.auart
-                };
+            try {
+                const results = await Promise.all(ploArray.map(async item => {
+                  const url = '/create_prod_order';
+                  const requestData = { PLANNED_ORDER: item.plnum, AUART: item.auart };
 
-                return fetch(url, {
-                    method: 'POST', // METODE BENAR
+                  const res = await fetch(url, {
+                    method: 'POST',
                     headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json' // HEADER PENTING
+                      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                      'Accept': 'application/json',
+                      'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(requestData) // DATA DIKIRIM DI BODY
-                }).then(res => {
-                    if (!res.ok) return Promise.reject(res.statusText);
-                    return res.json();
-                });
-            }))
-            .then(results => {
+                    body: JSON.stringify(requestData)
+                  });
+
+                  const json = await res.json().catch(() => ({}));
+                  if (!res.ok) throw new Error(json?.error || json?.message || res.statusText);
+                  return json;
+                }));
+
                 const successCount = results.filter(r => r.success).length;
-                alert(`${successCount} dari ${ploArray.length} Planned Order berhasil dikonversi.`);
+                await resultSwal({
+                  success: true,
+                  title: 'Konversi massal selesai',
+                  text: `${successCount} dari ${ploArray.length} Planned Order berhasil.`
+                });
                 location.reload();
-            })
-            .catch(error => {
-                console.error("Bulk convert error:", error);
-                alert('Terjadi kesalahan saat konversi massal. Beberapa atau semua order mungkin gagal.');
-            })
-            .finally(() => {
+            } catch (error) {
+                await resultSwal({
+                  success: false,
+                  title: 'Konversi massal gagal',
+                  text: 'Terjadi kesalahan. Beberapa/semua order mungkin gagal.'
+                });
+            } finally {
                 if (loader) loader.style.display = 'none';
-            });
+            }
         }
 
         function bulkReleaseOrders() {
@@ -1107,112 +1308,108 @@
         }
 
         function renderTData2Table(key){
-        const box = document.getElementById('tdata2-section');
-        box.innerHTML = '';
-        box.classList.add('hidden');
+          const box = document.getElementById('tdata2-section');
+          box.innerHTML = '';
+          box.classList.add('hidden');
 
-        const rows = allTData2[key] || [];
-        if (!rows.length){
-            box.innerHTML = `
-            <div class="bg-white rounded-lg border p-4">
-                <h4 class="text-md font-semibold mb-2">Outstanding Order</h4>
-                <p class="text-gray-500">Tidak ada data T_DATA2 untuk item ini.</p>
-            </div>`;
-            box.classList.remove('hidden');
-            return;
-        }
+          const rows = allTData2[key] || [];
+          if (!rows.length){
+              box.innerHTML = `
+              <div class="bg-white rounded-lg border p-4">
+                  <h4 class="text-md font-semibold mb-2">Outstanding Order</h4>
+                  <p class="text-gray-500">Tidak ada data T_DATA2 untuk item ini.</p>
+              </div>`;
+              box.classList.remove('hidden');
+              return;
+          }
 
-        let html = `
-            <div class="bg-white rounded-lg border p-4">
-            <h4 class="text-md font-semibold mb-3">Outstanding Order</h4>
-            <div class="overflow-x-auto">
-                <table class="min-w-full table-auto text-sm text-left whitespace-nowrap border">
-                <thead class="bg-blue-50">
-                    <tr>
-                    <th class="px-3 py-2 border text-blue-800 font-semibold">No.</th>
-                    <th class="px-3 py-2 border text-blue-800 font-semibold">ORDER</th>
-                    <th class="px-3 py-2 border text-blue-800 font-semibold">ITEM</th>
-                    <th class="px-3 py-2 border text-blue-800 font-semibold">MATERIAL FG</th>
-                    <th class="px-3 py-2 border text-blue-800 font-semibold">DESCRIPTION MATERIAL</th>
-                    <th class="px-3 py-2 border text-blue-800 font-semibold">PO DATE</th>
-                    <th class="px-3 py-2 border text-blue-800 font-semibold">TOTAL PLO</th>
-                    <th class="px-3 py-2 border text-blue-800 font-semibold">PRO (CRTD)</th>
-                    <th class="px-3 py-2 border text-blue-800 font-semibold">PRO (Released)</th>
-                    </tr>
-                </thead>
-                <tbody>`;
+          let html = `
+              <div class="bg-white rounded-lg border p-4">
+              <h4 class="text-md font-semibold mb-3">Outstanding Order</h4>
+              <div class="overflow-x-auto">
+                  <table class="min-w-full table-auto text-sm text-left whitespace-nowrap border">
+                  <thead class="bg-blue-50">
+                      <tr>
+                      <th class="px-3 py-2 border text-blue-800 font-semibold">No.</th>
+                      <th class="px-3 py-2 border text-blue-800 font-semibold">ORDER</th>
+                      <th class="px-3 py-2 border text-blue-800 font-semibold">ITEM</th>
+                      <th class="px-3 py-2 border text-blue-800 font-semibold">MATERIAL FG</th>
+                      <th class="px-3 py-2 border text-blue-800 font-semibold">DESCRIPTION MATERIAL</th>
+                      <th class="px-3 py-2 border text-blue-800 font-semibold">PO DATE</th>
+                      <th class="px-3 py-2 border text-blue-800 font-semibold">TOTAL PLO</th>
+                      <th class="px-3 py-2 border text-blue-800 font-semibold">PRO (CRTD)</th>
+                      <th class="px-3 py-2 border text-blue-800 font-semibold">PRO (Released)</th>
+                      </tr>
+                  </thead>
+                  <tbody>`;
 
-        rows.forEach((r, i) => {
-            const soKey = `${r.KDAUF || ''}-${r.KDPOS || ''}`;
-            const t3 = allTData3[soKey] || allTData3[key] || [];
+          rows.forEach((r, i) => {
+              const soKey = `${r.KDAUF || ''}-${r.KDPOS || ''}`;
+              const t3 = allTData3[soKey] || allTData3[key] || [];
 
-            let ploCount = 0, proCrt = 0, proRel = 0;
-            t3.forEach(d3 => {
-            if (d3.PLNUM && !d3.AUFNR) ploCount++;
-            if (d3.AUFNR){
-                if (d3.STATS === 'CRTD') proCrt++;
-                else if (['PCNF','REL','CNF REL'].includes(d3.STATS)) proRel++;
-            }
-            });
+              let ploCount = 0, proCrt = 0, proRel = 0;
+              t3.forEach(d3 => {
+                if (d3.PLNUM && !d3.AUFNR) ploCount++;
+                if (d3.AUFNR){
+                  if (d3.STATS === 'CRTD') proCrt++;
+                  else if (['PCNF','REL','CNF REL'].includes(d3.STATS)) proRel++;
+                }
+              });
 
-            html += `
-            <tr class="t2-row hover:bg-blue-50 cursor-pointer"
-                data-key="${soKey}"
-                data-index="${i}">
-                <td class="px-3 py-2 border text-center">${i + 1}</td>
-                <td class="px-3 py-2 border">${sanitize(r.KDAUF || '-')}</td>
-                <td class="px-3 py-2 border">${(r.KDPOS || '').toString().replace(/^0+/, '')}</td>
-                <td class="px-3 py-2 border ">${(r.MATFG || '').toString().replace(/^0+/, '') || '-'}</td>
-                <td class="px-3 py-2 border">${sanitize(r.MAKFG || '-')}</td>
-                <td class="px-3 py-2 border">${formatSapYmd(r.EDATU)}</td>
-                <td class="px-3 py-2 border text-center">${ploCount}</td>
-                <td class="px-3 py-2 border text-center">${proCrt}</td>
-                <td class="px-3 py-2 border text-center">${proRel}</td>
-            </tr>`;
-        });
+              html += `
+              <tr class="t2-row hover:bg-blue-50 cursor-pointer"
+                  data-key="${soKey}"
+                  data-index="${i}">
+                  <td class="px-3 py-2 border text-center">${i + 1}</td>
+                  <td class="px-3 py-2 border">${sanitize(r.KDAUF || '-')}</td>
+                  <td class="px-3 py-2 border">${(r.KDPOS || '').toString().replace(/^0+/, '')}</td>
+                  <td class="px-3 py-2 border ">${(r.MATFG || '').toString().replace(/^0+/, '') || '-'}</td>
+                  <td class="px-3 py-2 border">${sanitize(r.MAKFG || '-')}</td>
+                  <td class="px-3 py-2 border">${formatSapYmd(r.EDATU)}</td>
+                  <td class="px-3 py-2 border text-center">${ploCount}</td>
+                  <td class="px-3 py-2 border text-center">${proCrt}</td>
+                  <td class="px-3 py-2 border text-center">${proRel}</td>
+              </tr>`;
+          });
 
-        html += `
-                </tbody>
-                </table>
-            </div>
-            <p class="mt-2 text-xs text-gray-500">Klik salah satu baris untuk melihat Order Overview (T_DATA3).</p>
-            </div>`;
+          html += `
+                  </tbody>
+                  </table>
+              </div>
+              <p class="mt-2 text-xs text-gray-500">Klik salah satu baris untuk melihat Order Overview (T_DATA3).</p>
+              </div>`;
 
-        box.innerHTML = html;
-        box.classList.remove('hidden');
+          box.innerHTML = html;
+          box.classList.remove('hidden');
 
-        // pasang handler klik per baris T_DATA2 → tampilkan / toggle T_DATA3
-        box.querySelectorAll('.t2-row').forEach(tr => {
-            tr.addEventListener('click', () => handleClickTData2Row(tr.dataset.key, tr));
-        });
+          box.querySelectorAll('.t2-row').forEach(tr => {
+              tr.addEventListener('click', () => handleClickTData2Row(tr.dataset.key, tr));
+          });
         }
         
 
-            /** Saat user klik baris T_DATA2 → tampilkan T_DATA3 untuk key itu */
+        /** Saat user klik baris T_DATA2 → tampilkan T_DATA3 untuk key itu */
         function handleClickTData2Row(key, tr) {
             const idx = Number(tr.dataset.index);
             const t3Container = document.getElementById('tdata3-container');
 
-            // Jika klik baris yang sama → toggle T_DATA3
             if (currentT2Selection &&
                 currentT2Selection.key === key &&
                 currentT2Selection.index === idx) {
 
                 const isVisible = !t3Container.classList.contains('hidden');
                 if (isVisible) {
-                t3Container.classList.add('hidden');       // sembunyikan T_DATA3
-                tr.classList.remove('bg-blue-100');        // lepas highlight baris T_DATA2
-                currentT2Selection = null;                 // reset pilihan
+                  t3Container.classList.add('hidden');       // sembunyikan T_DATA3
+                  tr.classList.remove('bg-blue-100');        // lepas highlight baris T_DATA2
+                  currentT2Selection = null;                 // reset pilihan
                 } else {
-                // kalau sedang tersembunyi dan diklik lagi → tampilkan lagi
-                showTData3ForKey(key);
-                tr.classList.add('bg-blue-100');
-                currentT2Selection = { key, index: idx };
+                  showTData3ForKey(key);
+                  tr.classList.add('bg-blue-100');
+                  currentT2Selection = { key, index: idx };
                 }
                 return;
             }
 
-            // Klik baris berbeda → tampilkan T_DATA3 untuk key
             const box = document.getElementById('tdata2-section');
             box.querySelectorAll('.t2-row').forEach(r => r.classList.remove('bg-blue-100'));
             tr.classList.add('bg-blue-100');
@@ -1225,6 +1422,23 @@
             const t3Container = document.getElementById('tdata3-container');
             const rows = allTData3[key] || [];
             allRowsData = rows;
+
+            t3CurrentPage = 1; // Selalu reset ke halaman 1 saat data baru dipilih
+
+            if (rows.length) {
+                // ... baris selanjutnya tetap sama
+                filterByStatus('all'); 
+                t3Container.classList.remove('hidden');
+            } else {
+                const tbody = document.getElementById('tdata3-body');
+                tbody.innerHTML = `
+                <tr><td colspan="14" class="px-3 py-2 text-center text-gray-500 border">
+                    Tidak ada order overview (T_DATA3) untuk item ini.
+                </td></tr>`;
+                // Kosongkan pagination jika tidak ada data
+                document.getElementById('tdata3-pagination').innerHTML = ''; 
+                t3Container.classList.remove('hidden');
+            }
 
             if (rows.length) {
                 currentFilterName = 'all';
@@ -1251,8 +1465,8 @@
             const p = document.getElementById('schedulePanel');
             m.classList.remove('hidden');
             requestAnimationFrame(() => {
-            o.classList.remove('opacity-0');
-            p.classList.remove('opacity-0','scale-95');
+              o.classList.remove('opacity-0');
+              p.classList.remove('opacity-0','scale-95');
             });
         }
 
@@ -1266,22 +1480,20 @@
         } 
 
         function openChangeWcModal(aufnr, vornr, currentWC = '') {
-            // simpan param (buat dipakai nanti saat submit)
             document.getElementById('changeWcAufnr').value = aufnr || '';
             document.getElementById('changeWcVornr').value = vornr || '';
             document.getElementById('changeWcInput').value = '';
             document.getElementById('changeWcInput').placeholder = `${currentWC}`;
             document.getElementById('changeWcCurrent').textContent =
-            currentWC ? `Current WC: ${currentWC}` : '';
+              currentWC ? `Current WC: ${currentWC}` : '';
 
-            // tampilkan modal
             const m = document.getElementById('changeWcModal');
             const o = document.getElementById('changeWcOverlay');
             const p = document.getElementById('changeWcPanel');
             m.classList.remove('hidden');
             requestAnimationFrame(() => {
-            o.classList.remove('opacity-0');
-            p.classList.remove('opacity-0','scale-95');
+              o.classList.remove('opacity-0');
+              p.classList.remove('opacity-0','scale-95');
             });
         }
 
@@ -1304,27 +1516,27 @@
             if (e.key === 'Escape') closeChangeWcModal();
         });
 
-        // Alias sesuai nama lama di tombol (biar kompatibel)
         if (typeof window.openModalEditWC !== 'function') {
             window.openModalEditWC = (aufnr, vornr, currentWC='') => openChangeWcModal(aufnr, vornr, currentWC);
         }
 
-        function openChangePvModal(aufnr, currentPV = '') {
-            // simpan param (buat dipakai nanti saat submit)
+        function openChangePvModal(aufnr, currentPV = '', plantVal = null) {
+            const defaultPlant = @json($plant);
             document.getElementById('changePvAufnr').value = aufnr || '';
+            document.getElementById('changePvWerks').value = (plantVal || defaultPlant || '').trim();
+
             document.getElementById('changePvInput').value = '';
             document.getElementById('changePvInput').placeholder = `${currentPV}`;
             document.getElementById('changePvCurrent').textContent =
-            currentPV ? `Current PV: ${currentPV}` : '';
+                currentPV ? `Current PV: ${currentPV}` : '';
 
-            // tampilkan modal
             const m = document.getElementById('changePvModal');
             const o = document.getElementById('changePvOverlay');
             const p = document.getElementById('changePvPanel');
             m.classList.remove('hidden');
             requestAnimationFrame(() => {
-            o.classList.remove('opacity-0');
-            p.classList.remove('opacity-0', 'scale-95');
+                o.classList.remove('opacity-0');
+                p.classList.remove('opacity-0', 'scale-95');
             });
         }
 
@@ -1337,17 +1549,14 @@
             setTimeout(() => m.classList.add('hidden'), 150);
         }
 
-        // Tutup saat klik overlay
         document.addEventListener('click', (e) => {
             if (e.target && e.target.id === 'changePvOverlay') closeChangePvModal();
         });
 
-        // Tutup saat tekan ESC
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeChangePvModal();
         });
 
-        // Alias agar kompatibel dg tombol lama di tabel routing
         if (typeof window.openModalChangePV !== 'function') {
             window.openModalChangePV = (aufnr, currentPV='') => openChangePvModal(aufnr, currentPV);
         }
@@ -1359,7 +1568,6 @@
 
             document.getElementById('scheduleAufnr').value = aufnr;
 
-            // Default tanggal & waktu sekarang (local)
             const now = new Date();
             const yyyy = now.getFullYear();
             const mm   = String(now.getMonth()+1).padStart(2,'0');
@@ -1373,141 +1581,339 @@
 
             modal.classList.remove('hidden');
             requestAnimationFrame(() => {
-            overlay.classList.remove('opacity-0');
-            panel.classList.remove('opacity-0','scale-95');
+              overlay.classList.remove('opacity-0');
+              panel.classList.remove('opacity-0','scale-95');
             });
         }
 
-        function closeScheduleModal() {
-            const modal  = document.getElementById('scheduleModal');
-            const panel  = document.getElementById('schedulePanel');
-            const overlay= document.getElementById('scheduleOverlay');
-
-            overlay.classList.add('opacity-0');
-            panel.classList.add('opacity-0','scale-95');
-            setTimeout(() => modal.classList.add('hidden'), 150);
-        }
-
-        // Auto-format jam: izinkan "133000" → "13.30.00"; "13:3" → "13:30:00"
+        // Auto-format jam input
         (function() {
             const el = document.getElementById('scheduleTime');
             if (!el) return;
 
             el.addEventListener('input', (e) => {
-            let v = e.target.value.replace(/[^\d]/g,''); // ambil digit saja
-            if (v.length > 6) v = v.slice(0,6);
-            if (v.length >= 5)       e.target.value = v.replace(/(\d{2})(\d{2})(\d{1,2})/, '$1.$2.$3');
-            else if (v.length >= 3)  e.target.value = v.replace(/(\d{2})(\d{1,2})/, '$1.$2');
-            else                     e.target.value = v;
-        });
-
-         // Pastikan saat submit format jadi HH.MM.SS sesuai pattern (controller akan ubah ke ":")
-        const form = document.getElementById('scheduleForm');
-        form.addEventListener('submit', () => {
-        // trimming kecil
-        el.value = el.value.trim();
-        });
-    })();
-
-    async function submitChangePv() {
-        const btn   = document.getElementById('changePvSubmitBtn');
-        const aufnr = (document.getElementById('changePvAufnr').value || '').trim();
-        let   pv    = (document.getElementById('changePvInput').value || '').trim();
-
-        if (!aufnr)  { return (window.notify?.('AUFNR tidak ditemukan.', 'error') || alert('AUFNR tidak ditemukan.')); }
-        if (!pv)     { return (window.notify?.('Isi Production Version (PV) dahulu.', 'error') || alert('Isi PV dahulu.')); }
-
-        // normalisasi input PV
-        const verid = pv.replace(/\s+/g, '').padStart(4, '0');              // <-- TRIM & pad
-
-        const oldLabel = btn.textContent;
-        btn.disabled = true;
-        btn.textContent = 'Menyimpan...';
-
-        try {
-            const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
-            const url  = "{{ route('change-pv') }}";
-
-            const res = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',                                     // <-- tambah Accept
-                'X-CSRF-TOKEN': csrf
-            },
-            body: JSON.stringify({ AUFNR: aufnr, PROD_VERSION: verid })
+              let v = e.target.value.replace(/[^\d]/g,'');
+              if (v.length > 6) v = v.slice(0,6);
+              if (v.length >= 5)       e.target.value = v.replace(/(\d{2})(\d{2})(\d{1,2})/, '$1.$2.$3');
+              else if (v.length >= 3)  e.target.value = v.replace(/(\d{2})(\d{1,2})/, '$1.$2');
+              else                     e.target.value = v;
             });
 
-            const raw = await res.text();                                         // <-- robust parse JSON
-            let data = {};
-            try { data = raw ? JSON.parse(raw) : {}; }
-            catch { throw new Error(`Non-JSON response: ${raw.slice(0,120)}...`); }
+            const form = document.getElementById('scheduleForm');
+            form.addEventListener('submit', () => {
+              el.value = el.value.trim();
+            });
+        })();
 
-            if (!res.ok) {
-            const msg = data?.error || data?.message || `HTTP ${res.status}`;
-            throw new Error(msg);
+        function startGlobalLoading() {
+            if (window.loading?.show) return window.loading.show();
+            if (window.showLoading)   return window.showLoading();
+            if (window.toggleLoading) return window.toggleLoading(true);
+
+            const el = document.getElementById('global-loading');
+            if (el) el.classList.remove('hidden', 'opacity-0');
+        }
+
+        function stopGlobalLoading() {
+            if (window.loading?.hide) return window.loading.hide();
+            if (window.hideLoading)   return window.hideLoading();
+            if (window.toggleLoading) return window.toggleLoading(false);
+
+            const el = document.getElementById('global-loading');
+            if (el) el.classList.add('hidden', 'opacity-0');
+        }
+
+        async function submitChangePv() {
+            const btn    = document.getElementById('changePvSubmitBtn');
+            const aufnr  = (document.getElementById('changePvAufnr').value || '').trim();
+            let   pv     = (document.getElementById('changePvInput').value || '').trim();
+            const werks  = (document.getElementById('changePvWerks').value || '').trim();
+
+            if (!aufnr) return (window.notify?.('AUFNR tidak ditemukan.', 'error') || alert('AUFNR tidak ditemukan.'));
+            if (!pv)    return (window.notify?.('Isi Production Version (PV) dahulu.', 'error') || alert('Isi PV dahulu.'));
+            if (!werks) return (window.notify?.('Plant (WERKS) tidak ditemukan.', 'error') || alert('Plant (WERKS) tidak ditemukan.'));
+
+            const verid = pv.replace(/\s+/g, '').padStart(4, '0');
+
+            const oldLabel = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Menyimpan...';
+            startGlobalLoading();
+
+            try {
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+                const url  = "{{ route('change-pv') }}";
+
+                const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrf
+                },
+                body: JSON.stringify({ AUFNR: aufnr, PROD_VERSION: verid, plant: werks })
+                });
+
+                const raw = await res.text();
+                let data = {};
+                try { data = raw ? JSON.parse(raw) : {}; }
+                catch { throw new Error(`Non-JSON response: ${raw.slice(0, 200)}...`); }
+
+                if (!res.ok) {
+                const msg = data?.error || data?.message || `HTTP ${res.status}`;
+                throw new Error(msg);
+                }
+
+                // ✅ Matikan loader begitu respon sukses diterima
+                stopGlobalLoading();
+
+                if (window.refreshOrderDetail) await window.refreshOrderDetail(aufnr);
+                closeChangePvModal?.();
+
+                await resultSwal({
+                success: true,
+                title: 'Production Version diperbarui',
+                html: `
+                    <div style="text-align:left">
+                    <div><b>Order</b>: ${aufnr}</div>
+                    <div><b>Plant</b>: ${werks}</div>
+                    <div><b>PV Baru</b>: ${verid}</div>
+                    </div>
+                `
+                });
+
+                // boleh tampilkan loader lagi saat reload (beforeunload handler akan show), itu normal
+                location.reload();
+
+            } catch (err) {
+                // ✅ Pastikan loader juga mati saat error
+                stopGlobalLoading();
+
+                await resultSwal({
+                success: false,
+                title: 'Gagal mengubah PV',
+                text: err?.message || String(err)
+                });
+            } finally {
+                btn.disabled = false;
+                btn.textContent = oldLabel;
+            }
+        }
+
+        function getPlantFromCurrentData(){
+            // Sesuaikan dengan sumber data Anda
+            // contoh: return window.currentPlant || document.getElementById('plantHidden').value;
+            return (window.currentPlant || '');
+        }
+
+        // --- LOGIKA MODAL ADD COMPONENT ---
+        function openModalAddComponent(aufnr, vornr) {
+            console.log("Membuka modal dengan data:", { aufnr, vornr }); // Untuk debugging
+
+            // Set values di form (hidden inputs)
+            document.getElementById('add-component-aufnr').value = aufnr;
+            document.getElementById('add-component-vornr').value = vornr;
+            
+            // Set nilai yang akan ditampilkan (readonly inputs)
+            document.getElementById('display-aufnr').value = aufnr;
+            document.getElementById('display-vornr').value = vornr;
+            
+            // Reset input fields dari sesi sebelumnya
+            document.getElementById('add-component-matnr').value = '';
+            document.getElementById('add-component-bdmng').value = '';
+            document.getElementById('add-component-meins').value = '';
+            document.getElementById('add-component-lgort').value = '';
+            document.getElementById('add-component-plant-select').value = ''; // Reset pilihan plant
+            
+            // Tampilkan modal
+            const modal = document.getElementById('modal-add-component');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModalAddComponent() {
+            const modal = document.getElementById('modal-add-component');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+
+        // Tambahkan event listener saat DOM siap
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('add-component-form');
+            if (!form) return;
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const submitBtn = document.getElementById('add-component-submit-btn');
+                const originalText = submitBtn.textContent;
+                
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Menambahkan...';
+                
+                const formData = new FormData(form);
+
+                const formDataObj = Object.fromEntries(formData.entries());
+                console.log('Data yang akan dikirim ke Controller:', formDataObj);
+
+                const aufnr = formData.get('iv_aufnr'); // Ambil aufnr untuk update tabel
+                
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                    },
+                    body: formData
+                })
+                .then(response => response.json().then(data => ({ ok: response.ok, data })))
+                .then(({ ok, data }) => {
+                    if (ok && data.success) {
+                        toast('success', data.message || 'Komponen berhasil ditambahkan!');
+                        closeModalAddComponent();
+                        
+                        // Panggil fungsi untuk me-render ulang tabel T_DATA4
+                        if (data.components) {
+                            updateComponentTable(aufnr, data.components);
+                        }
+                        
+                    } else {
+                        throw new Error(data.message || 'Gagal menambahkan komponen.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    resultSwal({ success: false, title: 'Operasi Gagal', text: error.message });
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                    stopGlobalLoading();
+                });
+            });
+        });
+
+        // Fungsi baru untuk me-render ulang tabel komponen (T_DATA4)
+        function updateComponentTable(aufnr, newComponentsData) {
+            const container = document.getElementById(`tdata4-${aufnr}`);
+            if (!container) return; // Jika tabel T_DATA4 tidak sedang ditampilkan, tidak melakukan apa-apa
+
+            const tbody = container.querySelector('tbody');
+            if (!tbody) return;
+
+            // Simpan data baru ke variabel global agar konsisten
+            allTData4ByAufnr[aufnr] = newComponentsData;
+
+            const esc = (v) => { /* ... fungsi esc Anda ... */ };
+            const ltrim0 = (s) => String(s ?? '').replace(/^0+/, '');
+
+            const rowsHtml = newComponentsData.map((c, i) => `
+                <tr>
+                    <td class="border px-2 py-1 text-center">
+                        <input type="checkbox"
+                            class="component-select-${aufnr}"
+                            data-aufnr="${aufnr}"
+                            data-rspos="${c.RSPOS || i}"
+                            data-material="${ltrim0(c.MATNR)}"
+                            onchange="handleComponentSelect('${aufnr}')">
+                    </td>
+                    <td class="border px-2 py-1 text-center">${i + 1}</td>
+                    <td class="border px-2 py-1">${ltrim0(c.MATNR)}</td>
+                    <td class="border px-2 py-1">${esc(c.MAKTX)}</td>
+                    <td class="border px-2 py-1 text-center">${c.BDMNG ?? c.MENGE ?? '-'}</td>
+                    <td class="border px-2 py-1 text-center">${c.ENMNG ?? '-'}</td>
+                    <td class="border px-2 py-1 text-center">${esc(c.MEINS || '-')}</td>
+                </tr>
+            `).join('');
+
+            tbody.innerHTML = rowsHtml.length > 0 ? rowsHtml : `<tr><td colspan="7" class="text-center p-4 text-gray-500">Belum ada komponen.</td></tr>`;
+            
+            // Reset seleksi checkbox
+            clearComponentSelections(aufnr);
+        }
+
+        async function bulkDeleteComponents(aufnr) {
+            const selectedCheckboxes = document.querySelectorAll(`.component-select-${aufnr}:checked`);
+            
+            if (selectedCheckboxes.length === 0) {
+                toast('info', 'Tidak ada komponen yang dipilih.');
+                return;
             }
 
-            const beforeV = (data.before_version ?? '').toString().trim();
-            const afterV  = (data.after_version  ?? verid).toString().trim();
+            const { isConfirmed } = await confirmSwal({
+                title: `Hapus ${selectedCheckboxes.length} Komponen?`,
+                text: 'Tindakan ini tidak dapat dibatalkan.',
+                icon: 'warning',
+                confirmText: 'Ya, Hapus'
+            });
 
-            // normalisasi: ambil digit saja, pad ke 4 digit
-            const normalizeVerid = v => {
-            const digits = String(v ?? '').replace(/[^\d]/g,''); // buang spasi/tanda lain
-            return digits.padStart(4,'0').slice(-4);
+            if (!isConfirmed) {
+                return;
+            }
+
+            const componentsToDelete = Array.from(selectedCheckboxes).map(cb => ({
+                rspos: cb.dataset.rspos,
+                material: cb.dataset.material
+            }));
+
+            const payload = {
+                aufnr: aufnr,
+                components: componentsToDelete
             };
-            const newVerid = normalizeVerid(afterV);
 
-            // --- UPDATE STATE & RERENDER ROUTING ---
-            // amankan key AUFNR (raw & padded) jaga-jaga kalau index beda format
-            const keyRaw = String(aufnr);
-            const keyPad = keyRaw.padStart(12,'0');
+            startGlobalLoading(); // Spinner dimulai di sini
 
-            [keyRaw, keyPad].forEach(k => {
-            if (Array.isArray(tdata1ByAufnr?.[k])) {
-                // update VERID di semua baris routing utk AUFNR tsb
-                tdata1ByAufnr[k] = tdata1ByAufnr[k].map(t1 => ({ ...t1, VERID: newVerid }));
+            try {
+                const response = await fetch('{{ route('component.delete.bulk') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || 'Terjadi kesalahan pada server.');
+                }
+
+                // PERBAIKAN: Hentikan loading SEBELUM menampilkan notifikasi
+                stopGlobalLoading();
+
+                let resultHtml = `<p>${result.message}</p>`;
+                if (result.errors && result.errors.length > 0) {
+                    resultHtml += '<ul class="text-left mt-2 pl-5 list-disc">';
+                    result.errors.forEach(err => {
+                        resultHtml += `<li>${err}</li>`;
+                    });
+                    resultHtml += '</ul>';
+                }
+
+                await resultSwal({
+                    success: result.success,
+                    title: result.success ? 'Berhasil' : 'Selesai dengan Kegagalan',
+                    html: resultHtml
+                });
+                
+                location.reload();
+
+            } catch (error) {
+                // PERBAIKAN: Hentikan loading SEBELUM menampilkan notifikasi error
+                stopGlobalLoading(); 
+
+                console.error('Error saat menghapus komponen:', error);
+                await resultSwal({
+                    success: false,
+                    title: 'Operasi Gagal',
+                    text: error.message
+                });
             }
-            });
-
-            // hapus blok lama (kalau ada) dan render ulang
-            document.getElementById(`tdata1-${keyRaw}`)?.remove();
-            document.getElementById(`tdata1-${keyPad}`)?.remove();
-            showTData1ByAufnr(keyRaw); // panggil dengan yang sama seperti saat open modal
-
-            // Notifikasi
-            if (typeof Swal !== 'undefined') {
-            await Swal.fire({
-                icon: 'success',
-                title: 'PV berhasil diubah',
-                html: `<div class="text-left">
-                        <div><b>AUFNR:</b> ${aufnr}</div>
-                        <div><b>Sebelum:</b> ${beforeV || '-'}</div>
-                        <div><b>Sesudah:</b> ${newVerid || '-'}</div>
-                    </div>`,
-                timer: 2200,
-                showConfirmButton: false
-            });
-            } else {
-            alert(`PV berhasil diubah.\nSebelum: ${beforeV || '-'}\nSesudah: ${newVerid || '-'}`);
-            }
-
-            // Tutup modal
-            typeof closeChangePvModal === 'function' && closeChangePvModal();
-
-        } catch (err) {
-            if (typeof Swal !== 'undefined') {
-            Swal.fire({ icon: 'error', title: 'Gagal', text: err.message || String(err) });
-            } else {
-            alert(err.message || String(err));
-            }
-        } finally {
-            btn.disabled = false;
-            btn.textContent = oldLabel;
+            // Tidak perlu .finally() lagi untuk stopGlobalLoading()
         }
-        }
-
-
+    
     </script>
     @endpush
 </x-layouts.app>
