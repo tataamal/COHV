@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use App\Models\ProductionTData4;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 
 class Data4Controller extends Controller

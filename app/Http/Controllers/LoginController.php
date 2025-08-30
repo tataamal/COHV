@@ -137,7 +137,7 @@ class LoginController extends Controller
             Auth::login($user, true);
             
             // JIKA BERHASIL: Redirect ke dashboard admin
-            return redirect()->route('dashboard_all');
+            return redirect()->route('dashboard-landing');
 
         } catch (ConnectionException $e) {
             Log::error('Koneksi ke API SAP Gagal: ' . $e->getMessage());

@@ -7,21 +7,26 @@
     
     <title>{{ $title ?? config('app.name', 'Laravel') }} - KMI-PO System</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    {{-- Mengganti font menjadi Plus Jakarta Sans --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        /* Menerapkan font baru ke seluruh body */
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
     
     @stack('styles')
 </head>
-<body class="h-full bg-gradient-to-br from-purple-200 via-indigo-200 to-pink-200">
+<body class="h-full bg-gradient-to-br from-purple-50 via-indigo-50 to-pink-50">
     {{-- Layout ini hanya berisi slot, tanpa sidebar atau topbar --}}
     {{ $slot }}
 
     @stack('scripts')
 </body>
 </html>
+

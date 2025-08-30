@@ -31,7 +31,7 @@ Route::middleware('guest')->group(function (){
 Route::middleware('auth')->group(function (){
 
     // Routing Admin
-    Route::get('/dashboard_all', [AdminController::class, 'AdminDashboard'])->name('dashboard_all');
+    Route::get('/dashboard-landing', [AdminController::class, 'AdminDashboard'])->name('dashboard-landing');
     Route::get('/dashboard/{kode}', [AdminController::class, 'index'])->name('dashboard.show');
     Route::get('data2/{kode}', [ManufactController::class, 'DetailData2'])->name('detail.data2');
     Route::get('data2/detail/{kode}', [ManufactController::class, 'showDetail'])->name('show.detail.data2');
@@ -49,6 +49,8 @@ Route::middleware('auth')->group(function (){
     // route untuk kelola T-DATA3
     Route::get('/release-order/{aufnr}',[Data3Controller::class, 'releaseOrderDirect'])->name('release.order.direct');
     Route::post('/reschedule', [Data3Controller::class,'reschedule'])->name('reschedule.store');
+    Route::post('/teco-order', [Data3Controller::class, 'tecoOrder'])->name('order.teco');
+    Route::post('/read-pp-order', [Data3Controller::class, 'readPpOrder'])->name('order.readpp');
 
     // route untuk kelola T-DATA1
     Route::post('/changeWC', [Data1Controller::class,'changeWC'])->name('change-wc');

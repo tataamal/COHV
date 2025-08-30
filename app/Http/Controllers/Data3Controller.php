@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class Data3Controller extends Controller
@@ -236,7 +237,7 @@ class Data3Controller extends Controller
         ];
 
         try {
-            $resp = \Illuminate\Support\Facades\Http::withHeaders([
+            $resp = Http::withHeaders([
                     'X-SAP-Username' => session('username'),
                     'X-SAP-Password' => session('password'),
                 ])
@@ -250,6 +251,145 @@ class Data3Controller extends Controller
             return response()->json(['ok'=>true, 'result'=>$resp->json()]);
         } catch (\Throwable $e) {
             return response()->json(['ok'=>false, 'error'=>$e->getMessage()], 500);
+        }
+    }
+
+    public function tecoOrder(Request $request)
+    {
+        // 1. Validasi input dari frontend
+        $validated = $request->validate([
+            'aufnr' => 'required|string|max:12' // Sesuaikan validasi jika perlu
+        ]);
+
+        $aufnr = $validated['aufnr'];
+        $flaskApiUrl = 'http://127.0.0.1:8006/api/teco_order'; // URL API Flask Anda
+
+        try {
+            // 2. Hit ke endpoint API Flask
+            $response = Http::withHeaders([
+                    'X-SAP-Username' => session('username'),
+                    'X-SAP-Password' => session('password'),
+                ])->timeout(60)
+                ->post($flaskApiUrl, [
+                'AUFNR' => $aufnr // Pastikan key 'AUFNR' sesuai dengan yang diharapkan Flask
+            ]);
+
+            // 3. Proses respons dari Flask
+            if ($response->successful()) {
+                $sapData = $response->json();
+                
+                // Cek apakah ada pesan error dari BAPI di dalam respons Flask
+                // Anda mungkin perlu menyesuaikan ini berdasarkan struktur balikan SAP
+                $sapReturn = $sapData['BAPI_PRODORD_COMPLETE_TECH']['DETAIL_RETURN'][0] ?? null;
+
+                if (isset($sapReturn['TYPE']) && in_array($sapReturn['TYPE'], ['E', 'A'])) {
+                    // Jika SAP mengembalikan error ('E') atau abbort ('A')
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'SAP Error: ' . ($sapReturn['MESSAGE'] ?? 'Terjadi error tidak diketahui di SAP.')
+                    ]);
+                }
+
+                try {
+                    // Ganti 'ProductionOrder' dan 'aufnr' sesuai dengan Model dan nama kolom Anda
+                    ProductionTData3::where('aufnr', $aufnr)->delete();
+                    Log::info('Local data for AUFNR ' . $aufnr . ' deleted successfully after TECO.');
+                } catch (\Exception $dbException) {
+                    // Jika gagal hapus data, kirim log tapi tetap lanjutkan sebagai sukses TECO
+                    Log::error('Failed to delete local data for AUFNR ' . $aufnr . ': ' . $dbException->getMessage());
+                }
+
+                // Jika berhasil, kirim respons sukses beserta sinyal untuk refresh
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Order ' . $aufnr . ' berhasil di-TECO dan data diperbaharui.',
+                    'action' => 'refresh' // Sinyal untuk frontend
+                ]);
+
+            } else {
+                // Jika request ke Flask gagal (misal: server down, 404, dll)
+                $errorBody = $response->json();
+                $errorMessage = $errorBody['error'] ?? 'Gagal menghubungi service TECO.';
+                Log::error('Flask API Error for AUFNR ' . $aufnr . ': ' . $response->body());
+                return response()->json([
+                    'success' => false, 
+                    'message' => $errorMessage
+                ], $response->status());
+            }
+
+        } catch (\Exception $e) {
+            // Menangkap error koneksi atau timeout
+            Log::error('Connection to Flask API failed for AUFNR ' . $aufnr . ': ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak dapat terhubung ke server TECO. Mohon coba lagi nanti.'
+            ], 500);
+        }
+    }
+
+    public function readPpOrder(Request $request)
+    {
+        // 1. Validasi input dari frontend
+        $validated = $request->validate([
+            'aufnr' => 'required|string|max:12'
+        ]);
+
+        $aufnr = $validated['aufnr'];
+        // URL API Flask untuk Read PP
+        $flaskApiUrl = 'http://127.0.0.1:8006/api/read-pp';
+
+        try {
+            // 2. Hit ke endpoint API Flask
+            // Perhatikan: Key di body harus 'IV_AUFNR' sesuai ekspektasi Flask
+            $response = Http::withHeaders([
+                    'X-SAP-Username' => session('username'),
+                    'X-SAP-Password' => session('password'),
+                ])->timeout(60)->post($flaskApiUrl, [
+                'IV_AUFNR' => $aufnr 
+            ]);
+
+            // 3. Proses respons dari Flask
+            $flaskData = $response->json();
+
+            if ($response->successful()) {
+                // Flask mengembalikan status 200 (OK)
+                return response()->json([
+                    'success' => true,
+                    'message' => $flaskData['message'] ?? 'Proses Read PP berhasil.',
+                ]);
+            } else {
+                 // Ambil pesan error detail dari SAP, default ke array kosong jika tidak ada
+                $sapErrors = $flaskData['sap_errors'] ?? [];
+                // Siapkan pesan error default dari Flask
+                $errorMessage = $flaskData['message'] ?? 'Gagal menghubungi service Read PP.';
+
+                // Loop melalui setiap pesan error dari SAP
+                foreach ($sapErrors as $error) {
+                    // Periksa apakah pesan dimulai dengan 'E:' (Error)
+                    if (str_starts_with(trim($error), 'E:')) {
+                        // Jika ya, ganti pesan error default dengan pesan kustom Anda
+                        $errorMessage = 'Sudah ada transaksi pada Production Order ini, data master tidak dapat diubah.';
+                        // Hentikan loop karena kita sudah menemukan error tipe 'E'
+                        break;
+                    }
+                }
+
+                // Kirim respons ke frontend dengan pesan yang sudah disesuaikan
+                Log::error('Flask API Error for Read PP AUFNR ' . $aufnr . ': ' . $response->body());
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMessage, // Gunakan variabel pesan error yang baru
+                    'errors'  => $sapErrors 
+                ], $response->status());
+            }
+
+        } catch (\Exception $e) {
+            // Menangkap error koneksi atau timeout
+            Log::error('Connection to Flask API failed for Read PP ' . $aufnr . ': ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak dapat terhubung ke server Read PP. Mohon coba lagi nanti.'
+            ], 500);
         }
     }
 

@@ -1,13 +1,11 @@
 # main.py
 from flask import Flask, request, jsonify
 from pyrfc import Connection, ABAPApplicationError, ABAPRuntimeError, LogonError, CommunicationError
-from decimal import Decimal
 from concurrent.futures import ThreadPoolExecutor
 import threading
 import os
-import traceback
 from flask_cors import CORS
-from datetime import datetime, time
+from datetime import time
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": "*"}})
@@ -417,7 +415,7 @@ def teco_order():
             return jsonify({'error': 'AUFNR is required'}), 400
 
         # Panggil BAPI_PRODORD_COMPLETE_TECH
-        print("Calling RFC BAPI_PRODORD_COMPLETE_TECH...")
+        print(f"Calling BAPI_PRODORD_COMPLETE_TECH for order {aufnr}...")
         result_teco = conn.call(
             'BAPI_PRODORD_COMPLETE_TECH',
             SCOPE_COMPL_TECH='1',
@@ -425,24 +423,40 @@ def teco_order():
             WORK_PROCESS_MAX=99,
             ORDERS=[{'ORDER_NUMBER': aufnr}]
         )
+        print("Result from TECO BAPI:", result_teco)
 
-        # Lakukan COMMIT agar perubahan tersimpan
-        print("Calling RFC BAPI_TRANSACTION_COMMIT...")
-        result_commit = conn.call(
-            'BAPI_TRANSACTION_COMMIT',
-            WAIT='X'
-        )
+        # Validasi hasil dari BAPI TECO
+        # BAPI ini sering mengembalikan pesan error di tabel DETAIL_RETURN
+        if 'DETAIL_RETURN' in result_teco and result_teco['DETAIL_RETURN']:
+            for message in result_teco['DETAIL_RETURN']:
+                if message['TYPE'] in ['E', 'A']: # E = Error, A = Abort
+                    error_msg = f"SAP Error: {message['MESSAGE']}"
+                    print(error_msg)
+                    # Jika ada error, jangan commit dan kembalikan pesan error
+                    return jsonify({'error': error_msg, 'sap_response': result_teco}), 400
 
+        # Jika tidak ada error, lakukan COMMIT
+        print("Calling BAPI_TRANSACTION_COMMIT...")
+        result_commit = conn.call('BAPI_TRANSACTION_COMMIT', WAIT='X')
+        print("Result from COMMIT BAPI:", result_commit)
+
+        # Kembalikan respons sukses
         return jsonify({
             'BAPI_PRODORD_COMPLETE_TECH': result_teco,
             'BAPI_TRANSACTION_COMMIT': result_commit
-        })
+        }), 200
 
     except ValueError as ve:
-        return jsonify({'error': str(ve)}), 401
+        return jsonify({'error': str(ve)}), 401 # Unauthorized
     except Exception as e:
         print("Exception saat teco:", str(e))
-        return jsonify({'error': str(e)}), 500
+        # Log error yang lebih detail di server
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': 'Internal server error in Flask API.'}), 500
+    finally:
+        if 'conn' in locals() and conn:
+            conn.close() # Selalu tutup koneksi
 
 # CHANGE PV
 @app.route('/api/change_prod_version', methods=['POST'])
@@ -924,6 +938,95 @@ def delete_component():
     except Exception as e:
         print("Exception saat delete component:", str(e))
         return jsonify({'error': str(e)}), 500
+    
+# READ PP 
+@app.route('/api/read-pp', methods=['POST'])
+def read_pp():
+    """
+    Endpoint untuk melakukan re-explode BOM pada Production Order di SAP.
+    """
+    try:
+        # 1. Validasi Input dari Client
+        data = request.get_json()
+        if not data:
+            return jsonify({"status": "error", "message": "Request body harus dalam format JSON."}), 400
+
+        aufnr = data.get('IV_AUFNR')
+        if not aufnr:
+            return jsonify({"status": "error", "message": "Field 'IV_AUFNR' wajib diisi."}), 400
+
+        print(f"Data diterima untuk read-pp, AUFNR: {aufnr}")
+
+        conn = None  # Inisialisasi koneksi di luar blok try
+        # 2. Manajemen Koneksi yang Aman
+        username, password = get_credentials()
+        conn = connect_sap(username, password)
+        if not conn:
+            # Jika koneksi gagal dibuat
+            return jsonify({"status": "error", "message": "Gagal terhubung ke SAP."}), 500
+
+        # Data untuk BAPI
+        orderdata = {'EXPLODE_NEW': 'X'}
+
+        # Panggil BAPI
+        result = conn.call(
+            'BAPI_PRODORD_CHANGE',
+            NUMBER=aufnr,
+            ORDERDATA=orderdata,
+        )
+
+        # 3. Penanganan Respons BAPI yang Benar (Tabel)
+        return_data = result.get('RETURN')
+        return_messages = [] 
+
+        if isinstance(return_data, list):
+            # Jika SAP mengirim banyak pesan, gunakan langsung
+            return_messages = return_data
+        elif isinstance(return_data, dict):
+            # Jika SAP hanya mengirim satu pesan, bungkus dalam list
+            return_messages = [return_data]
+
+        errors = [msg for msg in return_messages if msg.get('TYPE') in ('E', 'A')]
+        all_messages_str = [f"{msg.get('TYPE', ' ')}: {msg.get('MESSAGE', '')}" for msg in return_messages]
+
+        if not errors:
+            # 4. Commit Jika Sukses
+            conn.call('BAPI_TRANSACTION_COMMIT', WAIT='X')
+            print(f"Commit sukses untuk Production Order: {aufnr}")
+            return jsonify({
+                "status": "success",
+                "message": f"Production Order {aufnr} berhasil di-update.",
+                "sap_messages": all_messages_str
+            }), 200
+        else:
+            # 5. Rollback Jika Gagal
+            conn.call('BAPI_TRANSACTION_ROLLBACK')
+            error_details = [f"{e['TYPE']}: {e['MESSAGE']}" for e in errors]
+            print(f"Error pada BAPI untuk PO {aufnr}: {error_details}. Melakukan rollback.")
+            return jsonify({
+                "status": "error",
+                "message": "Gagal mengupdate Production Order di SAP.",
+                "sap_errors": error_details
+            }), 400 # 400 Bad Request cocok karena errornya terkait data/proses bisnis
+
+    except (CommunicationError, LogonError, ABAPApplicationError, ABAPRuntimeError) as e:
+        # 6. Penanganan Error Teknis yang Tepat
+        print(f"SAP RFC Error: {str(e)}")
+        # Jangan kirim detail teknis ke client, cukup log saja
+        return jsonify({"status": "error", "message": "Terjadi error teknis saat berkomunikasi dengan SAP."}), 500
+    
+    except Exception as e:
+        # Menangkap error tak terduga lainnya
+        print(f"An unexpected error occurred: {str(e)}")
+        if conn: # Jika error terjadi setelah koneksi dibuat, coba rollback
+             conn.call('BAPI_TRANSACTION_ROLLBACK')
+        return jsonify({"status": "error", "message": "Terjadi kesalahan pada server."}), 500
+
+    finally:
+        # 7. Selalu Tutup Koneksi
+        if conn:
+            conn.close()
+            print("Koneksi SAP ditutup.")
 
 if __name__ == '__main__':
     os.environ['PYTHONHASHSEED'] = '0'

@@ -54,10 +54,41 @@
     </div>
     <!-- Chart Section -->
     <x-ui.card title="Data Kapasitas Workcenter" description="Jumlah PRO (AUFNR) di tiap-tiap Workcenter (ARBPL)">
-        <x-charts.bar-chart
-            chart-id="t3Chart"
-            :labels="$labels"
-            :datasets="$datasets"
-        />
+        
+        {{-- Hapus tag <x-charts.bar-chart> yang salah di sini --}}
+
+        <div class="flex flex-wrap -mx-4">
+
+            {{-- Chart pertama: Bar Chart (mengambil 2/3 atau col-8) --}}
+            <div class="w-full lg:w-2/3 px-4 mb-4 lg:mb-0">
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <x-charts.bar-chart
+                        chartId="workcenterChart"
+                        :labels="$labels"
+                        :datasets="$datasets "
+                        title="Jumlah PRO & Kapasitas per Workcenter"
+                        height="h-96"
+                    />
+                </div>
+            </div>
+
+            {{-- Chart kedua: Doughnut Chart (mengambil 1/3 atau col-4) --}}
+            <div class="w-full lg:w-1/3 px-4">
+                <div class="bg-white p-4 rounded-lg shadow-md">
+                    <x-charts.bar-chart 
+                        chartId="proStatusChart"
+                        type="doughnut"  {{-- Tentukan tipe chart --}}
+                        :labels="$doughnutChartLabels"
+                        :datasets="$doughnutChartDatasets"
+                        title="Perbandingan PRO Status REL per Plant"
+                        height="h-96"
+                    />
+                </div>
+            </div>
+
+        </div>
+
+        {{-- Hapus tag </x-charts.bar-chart> yang salah di sini --}}
+
     </x-ui.card>
 </x-layouts.app>
