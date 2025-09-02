@@ -180,7 +180,7 @@ class ManufactController extends Controller
                 }
             }
 
-            return redirect()->route('show.detail.data2', $kode)
+            return redirect()->route('dashboard.show', $kode)
                 ->with('success', 'Data berhasil disinkronkan.');
                 
         } catch (\Exception $e) {

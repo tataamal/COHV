@@ -19,6 +19,11 @@ class AdminController extends Controller
      */
     public function index(Request $request, $kode)
     {
+        // =================================================================
+        // DATA UNTUK CHART PERTAMA (BAR CHART - WORKCENTER)
+        // Query ini sudah benar dan spesifik per $kode. Tidak ada perubahan.
+        // =================================================================
+
         // 1a) Buat query untuk mendapatkan daftar induk semua ARBPL unik untuk plant ini
         $allWcQuery = DB::table('production_t_data1')
             ->select('ARBPL')
@@ -47,9 +52,9 @@ class AdminController extends Controller
             ->get();
 
         // 2) Siapkan labels dan data untuk kedua dataset (Tidak ada perubahan di sini)
-        $labels            = $statsPerWc->pluck('ARBPL_LABEL')->values()->all();
-        $datasetPro        = $statsPerWc->pluck('pro_count')->map(fn($v) => (int)$v)->values()->all();
-        $datasetCapacity   = $statsPerWc->pluck('total_capacity')->map(fn($v) => (float)$v)->values()->all();
+        $labels          = $statsPerWc->pluck('ARBPL_LABEL')->values()->all();
+        $datasetPro      = $statsPerWc->pluck('pro_count')->map(fn($v) => (int)$v)->values()->all();
+        $datasetCapacity = $statsPerWc->pluck('total_capacity')->map(fn($v) => (float)$v)->values()->all();
 
         // 3) Definisikan kedua dataset untuk chart (Tidak ada perubahan di sini)
         $datasets = [
@@ -70,47 +75,78 @@ class AdminController extends Controller
                 'borderRadius'    => 4,
             ],
         ];
-        
+
         // =================================================================
-        // DATA UNTUK CHART KEDUA (DOUGHNUT CHART - PER PLANT) - BARU
+        // DATA UNTUK CHART KEDUA (DOUGHNUT CHART - PER STATUS DI PLANT INI)
+        // DIUBAH: Query ini sekarang menghitung jumlah PRO berdasarkan status ('REL', 'CNF', dll)
+        // HANYA untuk plant ($kode) yang sedang aktif.
         // =================================================================
-        $statsRelPerPlant = DB::table('production_t_data1')
-            ->where('STATS', 'REL')
+        $statsByStatus = DB::table('production_t_data1')
+            ->where('WERKSX', $kode) // Filter utama berdasarkan plant
             ->whereRaw("NULLIF(TRIM(AUFNR), '') IS NOT NULL")
-            ->select('WERKSX', DB::raw('COUNT(DISTINCT AUFNR) as pro_count_rel'))
-            ->groupBy('WERKSX')
-            ->orderBy('WERKSX', 'asc')
+            ->select('STATS', DB::raw('COUNT(DISTINCT AUFNR) as pro_count_by_status'))
+            ->groupBy('STATS')
+            ->orderBy('STATS', 'asc')
             ->get();
 
-        $doughnutChartLabels = $statsRelPerPlant->pluck('WERKSX')->values()->all();
-        $doughnutChartDataset = $statsRelPerPlant->pluck('pro_count_rel')->values()->all();
+        $doughnutChartLabels = $statsByStatus->pluck('STATS')->values()->all();
+        $doughnutChartDataset = $statsByStatus->pluck('pro_count_by_status')->values()->all();
 
-        // Dataset untuk doughnut/pie chart memiliki struktur yang sedikit berbeda
         $doughnutChartDatasets = [
             [
-                'label' => 'Jumlah PRO Status REL',
+                'label' => 'Jumlah PRO per Status',
                 'data'  => $doughnutChartDataset,
                 'backgroundColor' => [
-                    'rgba(255, 99, 132, 0.7)',
-                    'rgba(54, 162, 235, 0.7)',
-                    'rgba(255, 206, 86, 0.7)',
-                    'rgba(75, 192, 192, 0.7)',
-                    'rgba(153, 102, 255, 0.7)',
-                    'rgba(255, 159, 64, 0.7)'
+                    'rgba(255, 99, 132, 0.7)',  // Merah
+                    'rgba(54, 162, 235, 0.7)', // Biru
+                    'rgba(255, 206, 86, 0.7)', // Kuning
+                    'rgba(75, 192, 192, 0.7)',  // Hijau
+                    'rgba(153, 102, 255, 0.7)',// Ungu
+                    'rgba(255, 159, 64, 0.7)' // Oranye
                 ],
                 'borderColor' => '#ffffff',
                 'borderWidth' => 2,
             ]
         ];
-        // Sisa kode Anda tidak berubah
-        $TData1 = ProductionTData1::count();
-        $TData2 = ProductionTData2::count();
-        $TData3 = ProductionTData3::count();
-        $TData4 = ProductionTData4::count();
+        
+        // =================================================================
+        // DATA KARDINAL (JUMLAH TOTAL)
+        // DIUBAH: Semua query count sekarang ditambahkan ->where('WERKSX', $kode)
+        // agar spesifik per plant.
+        // Asumsi: Semua tabel (TData1 s/d TData4) memiliki kolom 'WERKSX'.
+        // =================================================================
 
-        $outstandingReservasi = ProductionTData4::whereColumn('KALAB', '<', 'BDMNG')->count();
+        $searchReservasi = $request->input('search_reservasi');
 
-        return view('Admin.dashboard', compact('TData1', 'TData2', 'TData3', 'outstandingReservasi', 'labels', 'datasets','doughnutChartLabels','doughnutChartDatasets'));
+        $TData1 = ProductionTData1::where('WERKSX', $kode)->count();
+        $TData2 = ProductionTData2::where('WERKSX', $kode)->count();
+        $TData3 = ProductionTData3::where('WERKSX', $kode)->count();
+        $TData4 = ProductionTData4::where('WERKSX', $kode)
+        ->when($searchReservasi, function ($query, $term) {
+            // Lakukan pencarian jika $searchReservasi tidak kosong
+            return $query->where(function($q) use ($term) {
+                $q->where('RSNUM', 'like', "%{$term}%")
+                  ->orWhere('MATNR', 'like', "%{$term}%")
+                  ->orWhere('MAKTX', 'like', "%{$term}%");
+            });
+        })
+        ->paginate(10);
+
+        $outstandingReservasi = ProductionTData4::where('WERKSX', $kode)
+                                    ->whereColumn('KALAB', '<', 'BDMNG')
+                                    ->count();
+        return view('Admin.dashboard', compact(
+            'TData1', 
+            'TData2', 
+            'TData3', 
+            'TData4',
+            'outstandingReservasi', 
+            'labels', 
+            'datasets',
+            'doughnutChartLabels',
+            'doughnutChartDatasets',
+            'kode'
+        ));
     }
 
     public function AdminDashboard()

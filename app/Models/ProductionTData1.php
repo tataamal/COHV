@@ -49,8 +49,9 @@ class ProductionTData1 extends Model
             'ORDERX',
             'STATS2',
             'PV1',
-    'PV2',
-    'PV3',];
+            'PV2',
+            'PV3',
+        ];
     public function tData3()
 {
     return $this->belongsTo(ProductionTData3::class, 'AUFNR', 'AUFNR');

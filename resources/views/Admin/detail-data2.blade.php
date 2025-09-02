@@ -1,177 +1,137 @@
 <x-layouts.app>
-    {{-- Slot untuk Header Halaman --}}
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-            <div>
-                <h1 class="text-xl font-base text-gray-800">Kode Plant: {{ $plant }}</h1>
-                <p class="mt-1 text-sm text-gray-600">
-                    <span class="font-semibold">Bagian:</span> {{ $bagian }} | 
-                    <span class="font-semibold">Kategori:</span> {{ $categories }}
-                </p>
-            </div>
-            <div class="flex items-center space-x-2 mt-4 sm:mt-0">
-                {{-- Tombol Sync Data --}}
-                <a href="{{ route('detail.data2', $plant) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M4 20h5v-5M20 4h-5v5" />
-                    </svg>
-                    Sync Data SAP
-                </a>
-                {{-- Tombol Kembali --}}
-                <a href="#" onclick="hideAllDetails(); return false;" class="inline-flex items-center px-4 py-2 bg-yellow-300 border border-transparent rounded-md font-semibold text-xs text-neutral-900 uppercase tracking-widest hover:bg-yellow-500">
-                    Hide All Detail
-                </a>
-                <a href="{{ route('dashboard_all') }}" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-900">
-                    &larr; Back
-                </a>
-            </div>
-        </div>
-
-    {{-- Konten Utama Halaman --}}
-    <div>
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-4 text-gray-900">
-
-                    {{-- Container untuk Tabel Utama dan Paginasi --}}
-                    <div id="outstanding-order-container">
-                        
-                        {{-- Tabel Utama (T_DATA) --}}
-                        <div class="overflow-x-auto">
-                            <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-lg font-semibold">Sales Order (T_DATA)</h3>
-                                <form method="GET" class="flex items-center w-full md:w-1/3">
-                                    <div class="relative flex-grow">
-                                        <input
-                                            type="text"
-                                            name="search"
-                                            value="{{ request('search') }}"
-                                            placeholder="Search..."
-                                            class="w-full pl-10 pr-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:border-blue-500"
-                                            id="searchInput"
-                                        >
-                                        <div class="absolute top-0 left-0 inline-flex items-center p-2">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M21.71,20.29,18,16.61A9,9,0,1,0,16.61,18l3.68,3.68a1,1,0,0,0,1.42,0A1,1,0,0,0,21.71,20.29ZM11,18a7,7,0,1,1,7-7A7,7,0,0,1,11,18Z"/>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </form>
-                        </div>
-                            <table class="min-w-full table-auto text-sm text-left whitespace-nowrap border">
-                                <thead class="bg-gray-100">
-                                    <tr>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold">No.</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold">NAME</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($tdata as $index => $item)
-                                        @php
-                                        // key utk klik/expand
-                                        $key = ($item->KDAUF ?? '') . '-' . ($item->KDPOS ?? '');
-
-                                        // format EDATU (YYYYMMDD -> dd-mm-YYYY)
-                                        $poDate = '-';
-                                        if (!empty($item->EDATU) && strlen($item->EDATU) === 8) {
-                                            try {
-                                                $poDate = \Carbon\Carbon::createFromFormat('Ymd', $item->EDATU)->format('d-m-Y');
-                                            } catch (\Exception $e) {
-                                                $poDate = $item->EDATU;
-                                            }
-                                        }
-                                        @endphp
-
-                                        <tr class="hover:bg-blue-50 cursor-pointer"
-                                            data-key="{{ ($item->KDAUF ?? '') . '-' . ($item->KDPOS ?? '') }}"
-                                            onclick="openSalesItem(this)">
-                                            <td class="px-2 py-1 border text-center">{{ $tdata->firstItem() + $index }}</td>  {{-- No. --}}
-                                            <td class="px-2 py-1 border">{{ $item->NAME1 ?? '-' }}</td>                         {{-- NAME1 --}}
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="10" class="px-3 py-2 text-center text-gray-500 border">Tidak ada data ditemukan.</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {{-- Pagination Links --}}
-                        <div class="mt-4">
-                            {{ $tdata->appends(['search' => $search])->links() }}
-                        </div>
-                    </div>
-
-                    <div id="tdata2-section" class="mt-8 hidden"></div>
-
-                    {{-- Container untuk Tabel T_DATA3 (awalnya tersembunyi) --}}
-                    <div id="tdata3-container" class="mt-8 hidden">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold">Order Overview</h3>
-                            {{-- Tombol Filter Status --}}
-                            <div class="flex items-center gap-2">
-                                <div class="flex bg-gray-200 rounded-lg p-1" id="status-filter">
-                                    <button id="filter-all" class="px-3 py-1 rounded text-sm font-medium bg-blue-600 text-white" onclick="filterByStatus('all')">All</button>
-                                    <button id="filter-plo" class="px-3 py-1 rounded text-sm font-medium text-gray-700" onclick="filterByStatus('plo')">PLO</button>
-                                    <button id="filter-crtd" class="px-3 py-1 rounded text-sm font-medium text-gray-700" onclick="filterByStatus('crtd')">PRO (CRTD)</button>
-                                    <button id="filter-released" class="px-3 py-1 rounded text-sm font-medium text-gray-700" onclick="filterByStatus('released')">PRO (Released)</button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        {{-- Kontrol Aksi Massal (Bulk Action) --}}
-                        <div id="bulk-controls" class="flex items-center gap-2 mb-4 hidden">
-                            <button id="bulk-convert-btn" class="bg-orange-600 text-white px-4 py-2 rounded text-sm hidden" onclick="bulkConvertPlannedOrders()">Convert Selected PLO</button>
-                            <button id="bulk-release-btn" class="bg-green-600 text-white px-4 py-2 rounded text-sm hidden" onclick="bulkReleaseOrders()">Release Selected PRO</button>
-                            <button class="bg-gray-500 text-white px-4 py-2 rounded text-sm" onclick="clearAllSelections()">Clear All</button>
-                        </div>
-                        
-                        <div class="overflow-x-auto">
-                            <table id="tdata3-table" class="min-w-full table-auto text-sm text-left whitespace-nowrap border">
-                                <thead class="bg-gray-100  text-gray-700">
-                                    <tr>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold"><input type="checkbox" id="select-all" onchange="toggleSelectAll()" class="mr-1"> Select</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">No.</th> 
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">PRO</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">STATUS</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">ACTION</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">MRP</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">MATERIAL</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">DESCRIPTION</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">QTY ORDER</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">QTY GR</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">OUTS GR</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">BASIC START DATE</th>
-                                        <th class="px-3 py-2 border bg-blue-50 text-blue-800 font-semibold text-center">BASIC FINISH DATE</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tdata3-body">
-                                    {{-- Data akan diisi oleh JavaScript --}}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div id="tdata3-pagination" class="mt-4 flex justify-center items-center gap-2">
-                            {{-- Tombol paginasi akan dibuat oleh JavaScript di sini --}}
-                        </div>
-                    </div>
-
-                    {{-- Container untuk T_DATA1 dan T_DATA4 --}}
-                    <div id="additional-data-container" class="mt-4">
-                        {{-- Data akan diisi oleh JavaScript --}}
-                    </div>
+    <div class="max-w-screen-2xl mx-auto">
+        {{-- Header Halaman (Tetap Rapi) --}}
+        <div class="bg-white p-6 rounded-xl border border-gray-200 mb-8">
+            <div class="flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <h1 class="text-xl font-semibold text-gray-900">Kode Plant: {{ $plant }}</h1>
+                    <p class="mt-1 text-sm text-gray-500">
+                        <span class="font-medium text-gray-600">Bagian:</span> {{ $bagian }} | 
+                        <span class="font-medium text-gray-600">Kategori:</span> {{ $categories }}
+                    </p>
+                </div>
+                <div class="flex items-center space-x-2 flex-shrink-0">
+                    <a href="{{ route('detail.data2', $plant) }}" 
+                       @click.prevent="isLoading = true; setTimeout(() => { window.location.href = $el.href }, 150)"
+                       class="inline-flex items-center px-4 py-2 bg-purple-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700 transition">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M4 20h5v-5M20 4h-5v5"></path></svg>
+                        Sync
+                    </a>
+                    <a href="#" onclick="hideAllDetails(); return false;" class="inline-flex items-center px-4 py-2 bg-amber-500 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-amber-600 transition">
+                        Hide All
+                    </a>
+                    <a href="{{ route('dashboard.show', $plant) }}" 
+                        @click.prevent="isLoading = true; setTimeout(() => { window.location.href = $el.href }, 150)"
+                        class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-50 transition">
+                            &larr; Back To Dashboard
+                    </a>
                 </div>
             </div>
         </div>
-    </div>
 
+        {{-- Konten Utama dengan Tata Letak Sejajar --}}
+        <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-gray-200">
+            <div class="p-6 text-gray-900">
+                {{-- Container untuk Tabel Utama dan Paginasi --}}
+                <div id="outstanding-order-container">
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Sales Order (T_DATA)</h3>
+                        <form method="GET" class="flex items-center w-full sm:w-auto sm:max-w-xs">
+                            <div class="relative flex-grow">
+                                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" id="searchInput">
+                                <div class="absolute top-0 left-0 inline-flex items-center p-2.5">
+                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="overflow-x-auto border rounded-lg">
+                        <table class="min-w-full table-auto text-sm text-left whitespace-nowrap">
+                            <thead class="bg-purple-50 text-purple-800 font-semibold uppercase text-xs">
+                                <tr>
+                                    <th class="px-4 py-3 text-center w-16">No.</th>
+                                    <th class="px-4 py-3">Name</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                @forelse($tdata as $index => $item)
+                                    @php
+                                    $key = ($item->KDAUF ?? '') . '-' . ($item->KDPOS ?? '');
+                                    @endphp
+                                    <tr class="hover:bg-purple-50 cursor-pointer" data-key="{{ $key }}" onclick="openSalesItem(this)">
+                                        <td class="px-4 py-3 text-center">{{ $tdata->firstItem() + $index }}</td>
+                                        <td class="px-4 py-3 font-medium text-gray-800">{{ $item->NAME1 ?? '-' }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="2" class="px-4 py-12 text-center text-gray-500">Tidak ada data ditemukan.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-6">
+                        {{ $tdata->appends(['search' => $search])->links() }}
+                    </div>
+                </div>
+
+                <div id="tdata2-section" class="mt-8 hidden"></div>
+
+                <div id="tdata3-container" class="mt-8 hidden">
+                    <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Order Overview</h3>
+                        <div class="flex items-center gap-2">
+                            <div class="flex bg-gray-100 rounded-lg p-1 space-x-1" id="status-filter">
+                                <button id="filter-all" class="px-3 py-1.5 rounded-md text-sm font-medium bg-white text-gray-900 shadow-sm" onclick="filterByStatus(this, 'all')">All</button>
+                                <button id="filter-plo" class="px-3 py-1.5 rounded-md text-sm font-medium text-gray-600" onclick="filterByStatus(this, 'plo')">PLO</button>
+                                <button id="filter-crtd" class="px-3 py-1.5 rounded-md text-sm font-medium text-gray-600" onclick="filterByStatus(this, 'crtd')">PRO (CRTD)</button>
+                                <button id="filter-released" class="px-3 py-1.5 rounded-md text-sm font-medium text-gray-600" onclick="filterByStatus(this, 'released')">PRO (Released)</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="bulk-controls" class="flex items-center gap-2 mb-4 hidden">
+                        <button id="bulk-convert-btn" class="inline-flex items-center px-4 py-2 bg-amber-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-amber-700 transition hidden" onclick="bulkConvertPlannedOrders()">Convert Selected PLO</button>
+                        <button id="bulk-release-btn" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 transition hidden" onclick="bulkReleaseOrders()">Release Selected PRO</button>
+                        <button class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 transition" onclick="clearAllSelections()">Clear All</button>
+                    </div>
+                    
+                    <div class="overflow-x-auto border rounded-lg">
+                        <table id="tdata3-table" class="min-w-full table-auto text-sm text-left whitespace-nowrap">
+                            <thead class="bg-purple-50 text-purple-800 font-semibold uppercase text-xs">
+                                <tr>
+                                    <th class="px-4 py-3"><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></th>
+                                    <th class="px-4 py-3">No.</th> 
+                                    <th class="px-4 py-3">PRO</th>
+                                    <th class="px-4 py-3">Status</th>
+                                    <th class="px-4 py-3">Action</th>
+                                    <th class="px-4 py-3">MRP</th>
+                                    <th class="px-4 py-3">Material</th>
+                                    <th class="px-4 py-3">Description</th>
+                                    <th class="px-4 py-3 text-right">Qty Order</th>
+                                    <th class="px-4 py-3 text-right">Qty GR</th>
+                                    <th class="px-4 py-3 text-right">Outs GR</th>
+                                    <th class="px-4 py-3">Start Date</th>
+                                    <th class="px-4 py-3">Finish Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tdata3-body" class="divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                    
+                    <div id="tdata3-pagination" class="mt-4 flex justify-center items-center gap-2"></div>
+                </div>
+
+                <div id="additional-data-container" class="mt-4"></div>
+            </div>
+        </div>
+    </div>
     @include('Admin.add-component-modal')
     {{-- ========= RESULT MODAL (Tailwind) ========= --}}
-    <div id="resultModal" class="fixed inset-0 hidden">
+<div id="resultModal" class="fixed inset-0 hidden z-50">
 
-    <!-- overlay -->
     <div id="resultOverlay" class="absolute inset-0 bg-black/40 opacity-0 transition-opacity"></div>
 
-    <!-- panel -->
     <div class="absolute inset-0 flex items-center justify-center p-4">
         <div id="resultPanel"
             class="w-full max-w-xl origin-center transform rounded-2xl bg-white shadow-2xl opacity-0 scale-95 transition-all">
@@ -180,7 +140,6 @@
             <button id="resultClose" class="rounded-lg p-2 text-gray-500 hover:bg-gray-100">✕</button>
         </div>
 
-        <!-- SINGLE VIEW -->
         <div id="singleView" class="px-6 py-5 space-y-4">
             <div>
             <div class="text-sm text-gray-500">Plant</div>
@@ -189,12 +148,10 @@
             <div>
             <div class="text-sm text-gray-500">Production Order</div>
             <div id="poList" class="mt-1 flex flex-wrap gap-2">
-                <!-- badges injected -->
-            </div>
+                </div>
             </div>
         </div>
 
-        <!-- BATCH VIEW -->
         <div id="batchView" class="hidden px-6 py-5">
             <div class="text-sm text-gray-500 mb-2">Converted Orders</div>
             <div class="overflow-auto rounded-xl border max-h-80">
@@ -219,7 +176,6 @@
     </div>
     </div>
 
-    <!-- ========= SCHEDULE MODAL (FORM POST) ========= -->
     <div id="scheduleModal" class="fixed inset-0 z-50 hidden">
         <div id="scheduleOverlay" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0 transition-opacity"></div>
 
@@ -261,7 +217,6 @@
         </div>
         </div>
 
-    <!-- ========= CHANGE WC MODAL ========= -->
     <div id="changeWcModal" class="fixed inset-0 z-50 hidden">
         <div id="changeWcOverlay" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0 transition-opacity"></div>
 
@@ -273,15 +228,11 @@
                 <button type="button" onclick="closeChangeWcModal()" class="rounded-lg p-2 text-gray-500 hover:bg-gray-100">✕</button>
             </div>
 
-            <!-- FORM POST ke Controller -->
             <form action="{{ route('change-wc') }}" method="POST" class="px-6 py-5 space-y-4">
                 @csrf
-                <!-- hidden param -->
                 <input type="hidden" id="changeWcAufnr" name="aufnr">
                 <input type="hidden" id="changeWcVornr" name="vornr">
-                <input type="hidden" id="changeWcSequ"  name="sequ" value="0"><!-- isi jika punya sequence -->
-
-                <div>
+                <input type="hidden" id="changeWcSequ"  name="sequ" value="0"><div>
                 <label for="changeWcInput" class="text-sm text-gray-600">Work Center</label>
                 <input type="text" id="changeWcInput" name="work_center" placeholder="Masukkan Work Center baru"
                         class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500" required>
@@ -296,12 +247,9 @@
             </div>
         </div>
     </div>
-    <!-- ========= CHANGE PV MODAL (NO SUBMIT YET) ========= -->
     <div id="changePvModal" class="fixed inset-0 z-50 hidden">
-    <!-- overlay -->
     <div id="changePvOverlay" class="fixed inset-0 bg-black/30 backdrop-blur-sm opacity-0 transition-opacity"></div>
 
-        <!-- panel -->
         <div class="absolute inset-0 flex items-center justify-center p-4">
             <div id="changePvPanel"
                 class="w-full max-w-md origin-center transform rounded-2xl bg-white shadow-2xl opacity-0 scale-95 transition-all">
@@ -312,14 +260,12 @@
             </div>
 
             <div class="px-6 py-5 space-y-4">
-                <!-- simpan param utk nanti dipakai saat submit -->
                 <input type="hidden" id="changePvAufnr">
                 <input type="hidden" id="changePvWerks">
 
                 <div>
                     <label for="changePvInput" class="text-sm text-gray-600">Production Version (PV)</label>
                     
-                    <!-- SELECT ganti INPUT -->
                     <select id="changePvInput"
                             class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500">
                         <option value="">-- Pilih Production Version --</option>
@@ -335,7 +281,6 @@
             <div class="border-t px-6 py-4 flex justify-end gap-2">
                 <button type="button" onclick="closeChangePvModal()"
                         class="rounded-lg px-4 py-2 text-gray-700 hover:bg-gray-100">Tutup</button>
-                <!-- tombol dummy; belum melakukan apa-apa -->
                 <button type="button" id="changePvSubmitBtn"
                         class="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
                         onclick="submitChangePv()">Simpan</button>
@@ -343,9 +288,6 @@
         </div>
     </div>
     </div>
-
-    {{-- Other modals here --}}
-
     @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -469,22 +411,31 @@
 
             // klik baris yang sama -> tutup semua detail
             if (currentSelectedRow === tr) {
-              hideAllDetails();
-              return;
+                hideAllDetails();
+                return;
             }
 
             // reset + sembunyikan T_DATA3 dulu
             hideAllDetails();
             t3Container.classList.add('hidden');
 
+            // Mengukur tabel T_DATA dan menerapkan lebarnya ke tabel T_DATA3
+            const referenceTable = document.querySelector('#outstanding-order-container table');
+            const targetTable = document.getElementById('tdata3-table');
+
+            if (referenceTable && targetTable) {
+                const referenceWidth = referenceTable.scrollWidth; // Dapatkan lebar penuh dari tabel pertama
+                targetTable.style.minWidth = `${referenceWidth}px`; // Terapkan sebagai min-width
+            }
+
             currentSelectedRow = tr;
 
             // tampilkan hanya baris yang diklik, sembunyikan yang lain + header + pager
             document.querySelectorAll('#outstanding-order-container tbody tr')
-              .forEach(row => { if (row !== tr) row.classList.add('hidden'); });
+                .forEach(row => { if (row !== tr) row.classList.add('hidden'); });
             const headerRow = t2Container.querySelector('.flex.justify-between.items-center.mb-4');
             if (headerRow) headerRow.classList.add('hidden');
-            const pager = t2Container.querySelector('.mt-4');
+            const pager = t2Container.querySelector('.mt-6');
             if (pager) pager.classList.add('hidden');
 
             // render T_DATA2 dulu; T_DATA3 menunggu klik baris T_DATA2
@@ -537,7 +488,6 @@
                 lastPage = page;
             });
 
-            // Gabungkan semua bagian menjadi HTML final
             paginationContainer.innerHTML = `
                 <div class="flex-grow text-left">
                     ${infoHtml}
@@ -561,26 +511,17 @@
             if (!paginationContainer) return;
 
             if (isDisabled) {
-                // Menonaktifkan paginasi: membuatnya buram dan tidak bisa diklik
                 paginationContainer.classList.add('opacity-50', 'pointer-events-none');
             } else {
-                // Mengaktifkan kembali paginasi
                 paginationContainer.classList.remove('opacity-50', 'pointer-events-none');
             }
         }
 
-        /**
-         * FUNGSI BARU: Mengubah halaman TData3
-         */
         function changeT3Page(page) {
             t3CurrentPage = page;
-            // Panggil kembali fungsi filter utama, yang akan merender ulang halaman yang benar
             filterByStatus(currentFilterName); 
         }
 
-        /**
-         * FUNGSI BARU: Merender isi tabel TData3 untuk halaman saat ini
-         */
         function renderT3Page(filteredData) {
             const tbody = document.getElementById('tdata3-body');
             tbody.innerHTML = '';
@@ -593,24 +534,16 @@
                  tbody.innerHTML = `<tr><td colspan="14" class="text-center p-4">Tidak ada data untuk halaman ini.</td></tr>`;
             } else {
                 paginatedItems.forEach((d3, index) => {
-                    // Gunakan startIndex untuk nomor urut yang benar
                     const row = createTableRow(d3, startIndex + index + 1);
                     tbody.appendChild(row);
                 });
             }
 
-            // Render tombol paginasi berdasarkan jumlah total data yang difilter
             renderT3PaginationControls(filteredData.length);
             clearAllSelections();
         }
 
-        /** ====== OPEN MODAL WITH DATA ======
-         * Bentuk JSON yang didukung:
-         *  Single: { planned_order, plant, production_orders:[...], ... }
-         *  Batch : { results: [ { planned_order, plant, production_orders:[...] }, ... ] }
-         */
         function showResultModal(data) {
-          // set refreshPlant & refreshOrders agar tombol OK bisa trigger refresh data AUFNR
           const isBatch = Array.isArray(data?.results);
           if (isBatch) {
               const plant = data.results[0]?.plant || data.results[0]?.PLANT || @json($plant);
@@ -626,7 +559,6 @@
               refreshOrders = Array.from(new Set(orders.map(padAufnr)));
           }
 
-          // render UI
           const modalEl   = document.getElementById('resultModal');
           const overlayEl = document.getElementById('resultOverlay');
           const panelEl   = document.getElementById('resultPanel');
@@ -700,25 +632,26 @@
         function hideAllDetails() {
             const t2Container = document.getElementById('outstanding-order-container');
 
-            // sembunyikan T_DATA3
             document.getElementById('tdata3-container').classList.add('hidden');
 
-            // reset T_DATA2 card
             const box = document.getElementById('tdata2-section');
             if (box) { box.innerHTML = ''; box.classList.add('hidden'); }
 
-            // bersihkan container detail lainnya (T_DATA1/T_DATA4)
             document.getElementById('additional-data-container').innerHTML = '';
+            
+            // Hapus inline style min-width dari tabel tdata3 untuk reset
+            const targetTable = document.getElementById('tdata3-table');
+            if (targetTable) {
+                targetTable.style.minWidth = ''; 
+            }
 
-            // tampilkan semua baris T_DATA lagi + bar search + pagination
             const allMainRows = document.querySelectorAll('#outstanding-order-container tbody tr');
             allMainRows.forEach(row => row.classList.remove('hidden'));
             const headerRow = t2Container.querySelector('.flex.justify-between.items-center.mb-4');
             if (headerRow) headerRow.classList.remove('hidden');
-            const pager = t2Container.querySelector('.mt-4');
+            const pager = t2Container.querySelector('.mt-6');
             if (pager) pager.classList.remove('hidden');
 
-            // reset state
             if (currentSelectedRow) currentSelectedRow.classList.remove('bg-blue-100');
             currentSelectedRow = null;
             currentActiveKey = null;
@@ -729,17 +662,29 @@
             togglePaginationDisabled(false);
         }
 
-        function filterByStatus(status) {
-            document.querySelectorAll('#status-filter button').forEach(btn => {
-                btn.classList.remove('bg-blue-600', 'text-white');
-                btn.classList.add('text-gray-700');
-            });
-            document.getElementById(`filter-${status}`).classList.add('bg-blue-600', 'text-white');
-            document.getElementById(`filter-${status}`).classList.remove('text-gray-700');
+        function filterByStatus(buttonOrStatus) {
+            let status, button;
+            
+            if (typeof buttonOrStatus === 'string') {
+                status = buttonOrStatus;
+                button = document.getElementById(`filter-${status}`);
+            } else {
+                status = arguments[1];
+                button = buttonOrStatus;
+            }
 
-            // Jika filter diubah, selalu kembali ke halaman 1
+            const filterContainer = document.getElementById('status-filter');
+            if (filterContainer && button) {
+                filterContainer.querySelectorAll('button').forEach(btn => {
+                    btn.classList.remove('bg-white', 'text-gray-900', 'shadow-sm');
+                    btn.classList.add('text-gray-600');
+                });
+                button.classList.add('bg-white', 'text-gray-900', 'shadow-sm');
+                button.classList.remove('text-gray-600');
+            }
+            
             if (currentFilterName !== status) {
-                t3CurrentPage = 1;
+                t3CurrentPage = 1; 
                 currentFilterName = status;
             }
 
@@ -751,20 +696,23 @@
             } else if (status === 'released') {
                 filteredData = allRowsData.filter(d3 => d3.AUFNR && ['PCNF', 'REL', 'CNF REL'].includes(d3.STATS));
             }
-
-            // Panggil fungsi render yang baru, bukan loop manual di sini
+            
             renderT3Page(filteredData);
         }
 
-        // Fungsi untuk membersihkan string dan escape karakter khusus
+        function changeT3Page(page) {
+            t3CurrentPage = page;
+            filterByStatus(currentFilterName); 
+        }
+
         function escapeJsonString(str) {
             if (!str) return '';
             return str.toString()
-                .replace(/\\/g, '\\\\')  // Escape backslash
-                .replace(/"/g, '\\"')    // Escape double quotes
-                .replace(/\n/g, '\\n')   // Escape newlines
-                .replace(/\r/g, '\\r')   // Escape carriage returns
-                .replace(/\t/g, '\\t');  // Escape tabs
+                .replace(/\\/g, '\\\\')  
+                .replace(/"/g, '\\"')   
+                .replace(/\n/g, '\\n')  
+                .replace(/\r/g, '\\r')  
+                .replace(/\t/g, '\\t');  
         }
 
         function createTableRow(d3, index) {
@@ -799,25 +747,25 @@
                 <div class="flex items-center gap-2">
                     ${d3.AUFNR ? `
                     <button type="button" title="Reschedule"
-                        class="p-2 leading-none rounded-md text-slate-600 bg-transparent border border-slate-300 
-                            hover:bg-amber-500 hover:text-white hover:border-amber-500 transition-colors"
-                        onclick="openSchedule('${encodeURIComponent(padAufnr(d3.AUFNR))}')">
+                            class="p-2 leading-none rounded-md text-slate-600 bg-transparent border border-slate-300 
+                                hover:bg-amber-500 hover:text-white hover:border-amber-500 transition-colors"
+                            onclick="openSchedule('${encodeURIComponent(padAufnr(d3.AUFNR))}')">
                         <i class="fa-solid fa-clock-rotate-left fa-fw"></i>
                     </button>` : ''}
 
                     ${d3.AUFNR ? `
                     <button type="button" title="Read PP"
-                        class="p-2 leading-none rounded-md text-slate-600 bg-transparent border border-slate-300 
-                            hover:bg-sky-500 hover:text-white hover:border-sky-500 transition-colors"
-                        onclick="openReadPP('${encodeURIComponent(padAufnr(d3.AUFNR))}')">
+                            class="p-2 leading-none rounded-md text-slate-600 bg-transparent border border-slate-300 
+                                hover:bg-sky-500 hover:text-white hover:border-sky-500 transition-colors"
+                            onclick="openReadPP('${encodeURIComponent(padAufnr(d3.AUFNR))}')">
                         <i class="fa-solid fa-book-open fa-fw"></i>
                     </button>` : ''}
 
                     ${(d3.AUFNR && d3.STATS === 'REL') ? `
                     <button type="button" title="TECO"
-                        class="p-2 leading-none rounded-md text-slate-600 bg-transparent border border-slate-300 
-                            hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-colors"
-                        onclick="openTeco('${encodeURIComponent(padAufnr(d3.AUFNR))}')">
+                            class="p-2 leading-none rounded-md text-slate-600 bg-transparent border border-slate-300 
+                                hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-colors"
+                            onclick="openTeco('${encodeURIComponent(padAufnr(d3.AUFNR))}')">
                         <i class="fa-solid fa-circle-check fa-fw"></i>
                     </button>` : ''}
 
@@ -837,7 +785,6 @@
             return row;
         }
 
-        // Event listener untuk tombol convert (delegation)
         document.addEventListener('DOMContentLoaded', function() {
             document.addEventListener('click', function(e) {
                 if (e.target.classList.contains('convert-btn')) {
@@ -850,7 +797,6 @@
             });
         });
         
-        // FIX: jadikan async & gunakan await sepenuhnya
         async function convertPlannedOrderFixed(d3) {
           console.log('Convert button clicked', d3);
 
@@ -902,7 +848,7 @@
               showResultModal({
                 results: data.results.map(r => ({
                   planned_order: r.planned_order || r.PLANNED_ORDER || plnum,
-                  plant:        r.plant || r.PLANT || plant,
+                  plant:         r.plant || r.PLANT || plant,
                   production_orders: (r.production_orders || []).map(padAufnr)
                 }))
               });
@@ -928,11 +874,9 @@
           }
         }
 
-        // --- Fungsi untuk menampilkan T_DATA1 dan T_DATA4 ---
         function showTData1ByAufnr(aufnr) {
             const container = document.getElementById('additional-data-container');
             const divId = `tdata1-${aufnr}`;
-
             const existing = document.getElementById(divId);
             if (existing) {
                 existing.remove();
@@ -940,94 +884,51 @@
                 togglePaginationDisabled(false);
                 return;
             }
-
             const data = (tdata1ByAufnr && tdata1ByAufnr[aufnr]) ? tdata1ByAufnr[aufnr] : [];
-
             if (!Array.isArray(data) || data.length === 0) {
                 toast('info','Routing kosong','Tidak ada data routing ditemukan.');
                 return;
             }
-
             togglePaginationDisabled(true);
-
             document.querySelectorAll('#tdata3-body tr').forEach(row => {
                 if (!row.textContent.includes(aufnr)) row.classList.add('hidden');
                 else row.classList.remove('hidden');
             });
-
-            const renderNewWC = (t1) => {
-                let defaultPv = '-';
-                if (t1.VERID === '0001') defaultPv = t1.PV1;
-                else if (t1.VERID === '0002') defaultPv = t1.PV2;
-                else if (t1.VERID === '0003') defaultPv = t1.PV3;
-
-                const defaultPrefix = defaultPv?.split('-')[0]?.trim();
-                if (t1.VERID === '0001' && defaultPrefix && (t1.ARBPL?.trim() === defaultPrefix)) {
-                  return '-';
-                }
-                return t1.ARBPL || '-';
-            };
-
-            const rowsHtml = data.map((t1, i) => {
-                const ver = String(t1.VERID ?? '').trim().padStart(4,'0');
-                const pv1Class = ver === '0001' ? 'bg-blue-100 font-semibold text-green-900' : '';
-                const pv2Class = ver === '0002' ? 'bg-blue-100 font-semibold text-green-900' : '';
-                const pv3Class = ver === '0003' ? 'bg-blue-100 font-semibold text-green-900' : '';
-                const newWC = renderNewWC(t1);
-
-                return `
-                <tr>
-                    <td class="border text-md px-2 py-1 text-center">${i + 1}</td>
-                    <td class="border text-md px-2 py-1 text-center">${t1.VORNR || '-'}</td>
-                    <td class="border text-md px-2 py-1 text-center">${t1.STEUS || '-'}</td>
-                    <td class="border text-md px-2 py-1 text-center ">${t1.KTEXT || '-'}</td>
-                    <td class="border text-md px-2 py-1 text-center ">${newWC}</td>
-                    <td class="border text-md px-2 py-1 text-center ${pv1Class}">${t1.PV1 ?? '-'}</td>
-                    <td class="border text-md px-2 py-1 text-center ${pv2Class}">${t1.PV2 ?? '-'}</td>
-                    <td class="border text-md px-2 py-1 text-center ${pv3Class}">${t1.PV3 ?? '-'}</td>
-                    <td class="border text-md px-2 py-1">
-                      <div class="flex gap-2">
-                        <button class="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-indigo-600"
-                                onclick="openChangeWcModal('${t1.AUFNR}', '${t1.VORNR}', '${t1.ARBPL || ''}')">
-                          Edit WC
-                        </button>
-                        <button class="bg-orange-600 text-white px-2 py-1 rounded text-xs hover:bg-orange-500"
-                                onclick="openChangePvModal('${t1.AUFNR}', '${t1.VERID || ''}', '${t1.WERKS || ''}')">
-                          Change PV
-                        </button>
-                      </div>
+            const rowsHtml = data.map((t1, i) => `
+                <tr class="bg-white">
+                    <td class="px-4 py-3 text-center">${i + 1}</td>
+                    <td class="px-4 py-3 text-center">${t1.VORNR || '-'}</td>
+                    <td class="px-4 py-3 text-center">${t1.STEUS || '-'}</td>
+                    <td class="px-4 py-3">${t1.KTEXT || '-'}</td>
+                    <td class="px-4 py-3 text-center">${t1.ARBPL || '-'}</td>
+                    <td class="px-4 py-3">
+                        <div class="flex gap-2 justify-center">
+                            <button class="px-2 py-1 text-xs font-semibold text-indigo-700 bg-indigo-100 rounded-md hover:bg-indigo-200" onclick="openChangeWcModal('${t1.AUFNR}', '${t1.VORNR}', '${t1.ARBPL || ''}')">Edit WC</button>
+                            <button class="px-2 py-1 text-xs font-semibold text-amber-700 bg-amber-100 rounded-md hover:bg-amber-200" onclick="openChangePvModal('${t1.AUFNR}', '${t1.VERID || ''}', '${t1.WERKS || ''}')">Change PV</button>
+                        </div>
                     </td>
                 </tr>
-                `;
-            }).join('');
-
+            `).join('');
             const block = document.createElement('div');
             block.id = divId;
-            block.className = 'bg-gray-50 p-4 rounded-lg mb-4';
+            block.className = 'mt-4';
             block.innerHTML = `
-                <div class="flex justify-between items-center mb-2">
-                  <h4 class="text-md font-semibold">Routing Overview</h4>
-                </div>
-                <div class="overflow-x-auto">
-                  <table class="table-auto w-full text-xs border">
-                    <thead>
-                      <tr>
-                        <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">No.</th>
-                        <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">ACTIVITY (VORNR)</th>
-                        <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">CONTROL KEY (STEUS)</th>
-                        <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">DESCRIPTION (KTEXT)</th>
-                        <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">NEW WORKCENTER</th>
-                        <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">PV1</th>
-                        <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">PV2</th>
-                        <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">PV3</th>
-                        <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">ACTION</th>
-                      </tr>
-                    </thead>
-                    <tbody>${rowsHtml}</tbody>
-                  </table>
-                </div>
-            `;
-
+                <h4 class="text-md font-semibold text-gray-800 mb-2">Routing Overview</h4>
+                <div class="overflow-x-auto border rounded-lg">
+                    <table class="table-auto w-full text-sm">
+                        <thead class="bg-purple-50 text-purple-800 font-semibold uppercase text-xs">
+                            <tr>
+                                <th class="px-4 py-3">No.</th>
+                                <th class="px-4 py-3">Activity</th>
+                                <th class="px-4 py-3">Control Key</th>
+                                <th class="px-4 py-3">Description</th>
+                                <th class="px-4 py-3">Work Center</th>
+                                <th class="px-4 py-3 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">${rowsHtml}</tbody>
+                    </table>
+                </div>`;
             container.innerHTML = '';
             container.appendChild(block);
         }
@@ -1035,110 +936,68 @@
         function showTData4ByAufnr(aufnr) {
             const container = document.getElementById('additional-data-container');
             const blockId = `tdata4-${aufnr}`;
-
             const existing = document.getElementById(blockId);
             if (existing) {
                 existing.remove();
                 document.querySelectorAll('#tdata3-body tr').forEach(row => row.classList.remove('hidden'));
-
                 togglePaginationDisabled(false);
                 return;
             }
-
             togglePaginationDisabled(true);
-
-            // Ambil data komponen (T_DATA4)
             const data = (allTData4ByAufnr && allTData4ByAufnr[aufnr]) ? allTData4ByAufnr[aufnr] : [];
-            
-            // Sembunyikan baris lain di T_DATA3
             document.querySelectorAll('#tdata3-body tr').forEach(row => {
                 if (!row.textContent.includes(aufnr)) row.classList.add('hidden');
                 else row.classList.remove('hidden');
             });
-
-            // Helper functions
-            const esc = (v) => {
-                const d = document.createElement('div');
-                d.textContent = String(v ?? '-');
-                return d.innerHTML;
-            };
             const ltrim0 = (s) => String(s ?? '').replace(/^0+/, '');
-
-            // === Logika Pengambilan Parameter untuk Tombol "Add Component" ===
             const routingData = (tdata1ByAufnr && tdata1ByAufnr[aufnr]) ? tdata1ByAufnr[aufnr] : [];
-            const vornr = (routingData.length > 0 && routingData[0].VORNR) ? routingData[0].VORNR : '0010'; // Default ke '0010' jika routing kosong
-            const plant = '{{ $plant }}'; // Ambil plant dari Blade
-            // ================================================================
-
+            const vornr = (routingData.length > 0 && routingData[0].VORNR) ? routingData[0].VORNR : '0010';
+            const plant = '{{ $plant }}';
             const rowsHtml = data.map((c, i) => `
-                <tr>
-                    <td class="border px-2 py-1 text-center">
-                        <input type="checkbox"
-                            class="component-select-${aufnr}"
-                            data-aufnr="${aufnr}"
-                            data-rspos="${c.RSPOS || i}"
-                            data-material="${ltrim0(c.MATNR)}"
-                            onchange="handleComponentSelect('${aufnr}')">
-                    </td>
-                    <td class="border px-2 py-1 text-center">${i + 1}</td>
-                    <td class="border px-2 py-1">${ltrim0(c.MATNR)}</td>
-                    <td class="border px-2 py-1">${esc(c.MAKTX)}</td>
-                    <td class="border px-2 py-1 text-center">${c.BDMNG ?? c.MENGE ?? '-'}</td>
-                    <td class="border px-2 py-1 text-center">${c.RSPOS ?? '-'}</td>
-                    <td class="border px-2 py-1 text-center">${c.ENMNG ?? '-'}</td>
-                    <td class="border px-2 py-1 text-center">${esc(c.MEINS || '-')}</td>
+                <tr class="bg-white">
+                    <td class="px-4 py-3 text-center"><input type="checkbox" class="component-select-${aufnr} rounded border-gray-300 text-purple-600 shadow-sm focus:ring-purple-500" data-aufnr="${aufnr}" data-rspos="${c.RSPOS || i}" data-material="${ltrim0(c.MATNR)}" onchange="handleComponentSelect('${aufnr}')"></td>
+                    <td class="px-4 py-3 text-center">${i + 1}</td>
+                    <td class="px-4 py-3">${ltrim0(c.MATNR)}</td>
+                    <td class="px-4 py-3">${sanitize(c.MAKTX)}</td>
+                    <td class="px-4 py-3 text-center">${c.BDMNG ?? c.MENGE ?? '-'}</td>
+                    <td class="px-4 py-3 text-center">${c.ENMNG ?? '-'}</td>
+                    <td class="px-4 py-3 text-center">${sanitize(c.MEINS || '-')}</td>
                 </tr>
             `).join('');
-
             const block = document.createElement('div');
             block.id = blockId;
-            block.className = 'bg-gray-50 p-4 rounded-lg mb-4';
+            block.className = 'mt-4';
             block.innerHTML = `
                 <div class="flex justify-between items-center mb-2">
-                    <h4 class="text-md font-semibold">Component List (T_DATA4) — AUFNR: ${esc(aufnr)}</h4>
+                    <h4 class="text-md font-semibold text-gray-800">Component List (T_DATA4) — AUFNR: ${sanitize(aufnr)}</h4>
                     <div class="flex items-center gap-2">
                         <div class="flex items-center gap-2 hidden" id="bulk-delete-controls-${aufnr}">
-                            <button type="button" id="bulk-delete-btn-${aufnr}" class="bg-red-600 text-white px-3 py-2 rounded text-sm hover:bg-red-700" onclick="bulkDeleteComponents('${aufnr}')">
-                                Delete Selected (0)
-                            </button>
-                            <button type="button" class="bg-gray-500 text-white px-3 py-2 rounded text-sm hover:bg-gray-600" onclick="clearComponentSelections('${aufnr}')">
-                                Clear All
-                            </button>
+                            <button type="button" id="bulk-delete-btn-${aufnr}" class="inline-flex items-center px-3 py-1.5 bg-red-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 transition" onclick="bulkDeleteComponents('${aufnr}')">Delete Selected (0)</button>
+                            <button type="button" class="inline-flex items-center px-3 py-1.5 bg-gray-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 transition" onclick="clearComponentSelections('${aufnr}')">Clear All</button>
                         </div>
-                        
-                        <button type="button"
-                                class="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700"
-                                onclick="openModalAddComponent('${aufnr}', '${vornr}', '${plant}')">
-                            Add Component
-                        </button>
+                        <button type="button" class="inline-flex items-center px-3 py-1.5 bg-green-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 transition" onclick="openModalAddComponent('${aufnr}', '${vornr}', '${plant}')">Add Component</button>
                     </div>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="table-auto w-full text-sm border">
-                        <thead>
+                <div class="overflow-x-auto border rounded-lg">
+                    <table class="table-auto w-full text-sm">
+                        <thead class="bg-purple-50 text-purple-800 font-semibold uppercase text-xs">
                             <tr>
-                                <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold"><input type="checkbox" id="select-all-components-${aufnr}" onchange="toggleSelectAllComponents('${aufnr}')" class="mr-1"> Select</th>
-                                <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">No.</th>
-                                <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">Material</th>
-                                <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">Description</th>
-                                <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">Req. Qty</th>
-                                <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">Total Item</th>
-                                <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">Stock</th>
-                                <th class="px-3 py-2 border bg-blue-100 text-blue-900 font-semibold">Spec. Procurement</th>
+                                <th class="px-4 py-3"><input type="checkbox" id="select-all-components-${aufnr}" onchange="toggleSelectAllComponents('${aufnr}')"></th>
+                                <th class="px-4 py-3">No.</th>
+                                <th class="px-4 py-3">Material</th>
+                                <th class="px-4 py-3">Description</th>
+                                <th class="px-4 py-3">Req. Qty</th>
+                                <th class="px-4 py-3">Stock</th>
+                                <th class="px-4 py-3">Spec. Procurement</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            ${rowsHtml.length > 0 ? rowsHtml : `<tr><td colspan="7" class="text-center p-4 text-gray-500">Belum ada komponen. Klik 'Add Component' untuk menambahkan.</td></tr>`}
-                        </tbody>
+                        <tbody class="divide-y divide-gray-200">${rowsHtml.length > 0 ? rowsHtml : `<tr><td colspan="7" class="text-center p-12 text-gray-500">Belum ada komponen. Klik 'Add Component' untuk menambahkan.</td></tr>`}</tbody>
                     </table>
-                </div>
-            `;
-
+                </div>`;
             container.innerHTML = '';
             container.appendChild(block);
         }
 
-        // === handlers bulk select (tetap) ===
         function handleComponentSelect(aufnr){
             const checkboxes = document.querySelectorAll(`.component-select-${aufnr}`);
             const selected = [...checkboxes].filter(cb => cb.checked);
@@ -1174,7 +1033,6 @@
             // TODO: panggil API delete Anda di sini
         }
         
-        // --- Fungsi utilitas dan bulk action (disederhanakan) ---
         function handleBulkSelect(checkbox) {
             const type = checkbox.dataset.type;
             const id = checkbox.dataset.id;
@@ -1308,87 +1166,72 @@
         }
 
         function renderTData2Table(key){
-          const box = document.getElementById('tdata2-section');
-          box.innerHTML = '';
-          box.classList.add('hidden');
+            const box = document.getElementById('tdata2-section');
+            box.innerHTML = '';
+            box.classList.add('hidden');
 
-          const rows = allTData2[key] || [];
-          if (!rows.length){
-              box.innerHTML = `
-              <div class="bg-white rounded-lg border p-4">
-                  <h4 class="text-md font-semibold mb-2">Outstanding Order</h4>
-                  <p class="text-gray-500">Tidak ada data T_DATA2 untuk item ini.</p>
-              </div>`;
-              box.classList.remove('hidden');
-              return;
-          }
+            const rows = allTData2[key] || [];
+            if (!rows.length){
+                box.innerHTML = `
+                <h4 class="text-lg font-semibold text-gray-800 mb-4">Outstanding Order</h4>
+                <div class="bg-gray-50 rounded-xl border p-12 text-center">
+                    <p class="text-gray-500 text-sm">Tidak ada data Outstanding Order untuk item ini.</p>
+                </div>`;
+                box.classList.remove('hidden');
+                return;
+            }
 
-          let html = `
-              <div class="bg-white rounded-lg border p-4">
-              <h4 class="text-md font-semibold mb-3">Outstanding Order</h4>
-              <div class="overflow-x-auto">
-                  <table class="min-w-full table-auto text-sm text-left whitespace-nowrap border">
-                  <thead class="bg-blue-50">
-                      <tr>
-                      <th class="px-3 py-2 border text-blue-800 font-semibold">No.</th>
-                      <th class="px-3 py-2 border text-blue-800 font-semibold">ORDER</th>
-                      <th class="px-3 py-2 border text-blue-800 font-semibold">ITEM</th>
-                      <th class="px-3 py-2 border text-blue-800 font-semibold">MATERIAL FG</th>
-                      <th class="px-3 py-2 border text-blue-800 font-semibold">DESCRIPTION MATERIAL</th>
-                      <th class="px-3 py-2 border text-blue-800 font-semibold">PO DATE</th>
-                      <th class="px-3 py-2 border text-blue-800 font-semibold">TOTAL PLO</th>
-                      <th class="px-3 py-2 border text-blue-800 font-semibold">PRO (CRTD)</th>
-                      <th class="px-3 py-2 border text-blue-800 font-semibold">PRO (Released)</th>
-                      </tr>
-                  </thead>
-                  <tbody>`;
+            let html = `
+                <h4 class="text-lg font-semibold text-gray-800 mb-4">Outstanding Order</h4>
+                <div class="overflow-x-auto border rounded-lg">
+                    <table class="min-w-full table-auto text-sm text-left whitespace-nowrap">
+                    <thead class="bg-purple-50 text-purple-800 font-semibold uppercase text-xs">
+                        <tr>
+                        <th class="px-4 py-3">No.</th>
+                        <th class="px-4 py-3">Order</th>
+                        <th class="px-4 py-3">Item</th>
+                        <th class="px-4 py-3">Material FG</th>
+                        <th class="px-4 py-3">Description Material</th>
+                        <th class="px-4 py-3">PO Date</th>
+                        <th class="px-4 py-3 text-center">Total PLO</th>
+                        <th class="px-4 py-3 text-center">PRO (CRTD)</th>
+                        <th class="px-4 py-3 text-center">PRO (Released)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 bg-white">`;
 
-          rows.forEach((r, i) => {
-              const soKey = `${r.KDAUF || ''}-${r.KDPOS || ''}`;
-              const t3 = allTData3[soKey] || allTData3[key] || [];
-
-              let ploCount = 0, proCrt = 0, proRel = 0;
-              t3.forEach(d3 => {
-                if (d3.PLNUM && !d3.AUFNR) ploCount++;
-                if (d3.AUFNR){
-                  if (d3.STATS === 'CRTD') proCrt++;
-                  else if (['PCNF','REL','CNF REL'].includes(d3.STATS)) proRel++;
-                }
-              });
-
-              html += `
-              <tr class="t2-row hover:bg-blue-50 cursor-pointer"
-                  data-key="${soKey}"
-                  data-index="${i}">
-                  <td class="px-3 py-2 border text-center">${i + 1}</td>
-                  <td class="px-3 py-2 border">${sanitize(r.KDAUF || '-')}</td>
-                  <td class="px-3 py-2 border">${(r.KDPOS || '').toString().replace(/^0+/, '')}</td>
-                  <td class="px-3 py-2 border ">${(r.MATFG || '').toString().replace(/^0+/, '') || '-'}</td>
-                  <td class="px-3 py-2 border">${sanitize(r.MAKFG || '-')}</td>
-                  <td class="px-3 py-2 border">${formatSapYmd(r.EDATU)}</td>
-                  <td class="px-3 py-2 border text-center">${ploCount}</td>
-                  <td class="px-3 py-2 border text-center">${proCrt}</td>
-                  <td class="px-3 py-2 border text-center">${proRel}</td>
-              </tr>`;
-          });
-
-          html += `
-                  </tbody>
-                  </table>
-              </div>
-              <p class="mt-2 text-xs text-gray-500">Klik salah satu baris untuk melihat Order Overview (T_DATA3).</p>
-              </div>`;
-
-          box.innerHTML = html;
-          box.classList.remove('hidden');
-
-          box.querySelectorAll('.t2-row').forEach(tr => {
-              tr.addEventListener('click', () => handleClickTData2Row(tr.dataset.key, tr));
-          });
+            rows.forEach((r, i) => {
+                const soKey = `${r.KDAUF || ''}-${r.KDPOS || ''}`;
+                const t3 = allTData3[soKey] || allTData3[key] || [];
+                let ploCount = 0, proCrt = 0, proRel = 0;
+                t3.forEach(d3 => {
+                    if (d3.PLNUM && !d3.AUFNR) ploCount++;
+                    if (d3.AUFNR){
+                        if (d3.STATS === 'CRTD') proCrt++;
+                        else if (['PCNF','REL','CNF REL'].includes(d3.STATS)) proRel++;
+                    }
+                });
+                html += `
+                    <tr class="t2-row hover:bg-purple-50 cursor-pointer" data-key="${soKey}" data-index="${i}">
+                        <td class="px-4 py-3 text-center">${i + 1}</td>
+                        <td class="px-4 py-3 font-medium text-gray-800">${sanitize(r.KDAUF || '-')}</td>
+                        <td class="px-4 py-3">${(r.KDPOS || '').toString().replace(/^0+/, '')}</td>
+                        <td class="px-4 py-3">${(r.MATFG || '').toString().replace(/^0+/, '') || '-'}</td>
+                        <td class="px-4 py-3">${sanitize(r.MAKFG || '-')}</td>
+                        <td class="px-4 py-3">${formatSapYmd(r.EDATU)}</td>
+                        <td class="px-4 py-3 text-center">${ploCount}</td>
+                        <td class="px-4 py-3 text-center">${proCrt}</td>
+                        <td class="px-4 py-3 text-center">${proRel}</td>
+                    </tr>`;
+            });
+            html += `</tbody></table></div><p class="mt-3 text-xs text-gray-500">Klik salah satu baris untuk melihat Order Overview (T_DATA3).</p>`;
+            box.innerHTML = html;
+            box.classList.remove('hidden');
+            box.querySelectorAll('.t2-row').forEach(tr => {
+                tr.addEventListener('click', () => handleClickTData2Row(tr.dataset.key, tr));
+            });
         }
         
-
-        /** Saat user klik baris T_DATA2 → tampilkan T_DATA3 untuk key itu */
         function handleClickTData2Row(key, tr) {
             const idx = Number(tr.dataset.index);
             const t3Container = document.getElementById('tdata3-container');
@@ -1399,13 +1242,13 @@
 
                 const isVisible = !t3Container.classList.contains('hidden');
                 if (isVisible) {
-                  t3Container.classList.add('hidden');       // sembunyikan T_DATA3
-                  tr.classList.remove('bg-blue-100');        // lepas highlight baris T_DATA2
-                  currentT2Selection = null;                 // reset pilihan
+                    t3Container.classList.add('hidden');       // sembunyikan T_DATA3
+                    tr.classList.remove('bg-blue-100');         // lepas highlight baris T_DATA2
+                    currentT2Selection = null;                  // reset pilihan
                 } else {
-                  showTData3ForKey(key);
-                  tr.classList.add('bg-blue-100');
-                  currentT2Selection = { key, index: idx };
+                    showTData3ForKey(key);
+                    tr.classList.add('bg-blue-100');
+                    currentT2Selection = { key, index: idx };
                 }
                 return;
             }
@@ -1465,8 +1308,8 @@
             const p = document.getElementById('schedulePanel');
             m.classList.remove('hidden');
             requestAnimationFrame(() => {
-              o.classList.remove('opacity-0');
-              p.classList.remove('opacity-0','scale-95');
+                o.classList.remove('opacity-0');
+                p.classList.remove('opacity-0','scale-95');
             });
         }
 
@@ -1485,15 +1328,15 @@
             document.getElementById('changeWcInput').value = '';
             document.getElementById('changeWcInput').placeholder = `${currentWC}`;
             document.getElementById('changeWcCurrent').textContent =
-              currentWC ? `Current WC: ${currentWC}` : '';
+                currentWC ? `Current WC: ${currentWC}` : '';
 
             const m = document.getElementById('changeWcModal');
             const o = document.getElementById('changeWcOverlay');
             const p = document.getElementById('changeWcPanel');
             m.classList.remove('hidden');
             requestAnimationFrame(() => {
-              o.classList.remove('opacity-0');
-              p.classList.remove('opacity-0','scale-95');
+                o.classList.remove('opacity-0');
+                p.classList.remove('opacity-0','scale-95');
             });
         }
 
@@ -1581,8 +1424,8 @@
 
             modal.classList.remove('hidden');
             requestAnimationFrame(() => {
-              overlay.classList.remove('opacity-0');
-              panel.classList.remove('opacity-0','scale-95');
+                overlay.classList.remove('opacity-0');
+                panel.classList.remove('opacity-0','scale-95');
             });
         }
 
@@ -1592,16 +1435,16 @@
             if (!el) return;
 
             el.addEventListener('input', (e) => {
-              let v = e.target.value.replace(/[^\d]/g,'');
-              if (v.length > 6) v = v.slice(0,6);
-              if (v.length >= 5)       e.target.value = v.replace(/(\d{2})(\d{2})(\d{1,2})/, '$1.$2.$3');
-              else if (v.length >= 3)  e.target.value = v.replace(/(\d{2})(\d{1,2})/, '$1.$2');
-              else                     e.target.value = v;
+                let v = e.target.value.replace(/[^\d]/g,'');
+                if (v.length > 6) v = v.slice(0,6);
+                if (v.length >= 5)       e.target.value = v.replace(/(\d{2})(\d{2})(\d{1,2})/, '$1.$2.$3');
+                else if (v.length >= 3)  e.target.value = v.replace(/(\d{2})(\d{1,2})/, '$1.$2');
+                else                     e.target.value = v;
             });
 
             const form = document.getElementById('scheduleForm');
             form.addEventListener('submit', () => {
-              el.value = el.value.trim();
+                el.value = el.value.trim();
             });
         })();
 
@@ -1911,7 +1754,6 @@
                     text: error.message
                 });
             }
-            // Tidak perlu .finally() lagi untuk stopGlobalLoading()
         }
 
         function openTeco(aufnr) {

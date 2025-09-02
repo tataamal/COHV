@@ -70,7 +70,7 @@
                         $cardClass = ($loop->first && $loop->count > 2) ? 'lg:col-span-2' : '';
                     @endphp
                     
-                    <a href="{{ route('detail.data2', [$plant->kode]) }}"
+                    <a href="{{ route('dashboard.show', [$plant->kode]) }}"
                        @click.prevent="isLoading = true; setTimeout(() => { window.location.href = $el.href }, 150)"
                        class="group block p-8 bg-white rounded-2xl shadow-lg border border-transparent {{ $colors['border'] }} hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 {{ $cardClass }}">
                         <div class="w-16 h-16 {{ $colors['bg'] }} rounded-full flex items-center justify-center mx-auto mb-4 ring-8 {{ $colors['ring'] }}">

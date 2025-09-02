@@ -19,7 +19,9 @@
     </style>
     
 </head>
-<body x-data="{ isLoading: false }" class="h-full bg-gray-50 antialiased">
+<body x-data="{ isLoading: false }" 
+      x-init="$watch('isLoading', value => { if (value) startLoaderTypingEffect() })"
+      class="h-full bg-gray-50 antialiased">
     
     <!-- Halaman Overlay Loading -->
     <div x-show="isLoading"
@@ -32,7 +34,8 @@
          x-transition:leave-end="opacity-0"
          class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
         
-        <div class="w-72 h-72">
+        {{-- [DIPERBARUI] Ukuran container animasi diperbesar --}}
+        <div class="w-96 h-96">
             <dotlottie-wc
                 src="https://lottie.host/efd6845b-3f14-492b-98a8-9336a08a5f98/RJUcUzKVqm.lottie"
                 speed="1"
@@ -41,7 +44,8 @@
             </dotlottie-wc>
         </div>
         
-        <h2 class="text-2xl font-bold text-gray-800 tracking-wide -mt-6">
+        {{-- [DIPERBARUI] Margin atas disesuaikan untuk posisi teks yang lebih baik --}}
+        <h2 class="text-2xl font-bold text-gray-800 tracking-wide -mt-10">
             <span id="loader-typing-effect"></span>
             <span id="loader-typing-cursor" class="inline-block w-0.5 h-7 bg-gray-800 animate-pulse ml-1" style="margin-bottom: -5px;"></span>
         </h2>
@@ -50,43 +54,34 @@
 
     {{ $slot }}
 
-    {{-- [DIPERBARUI] Menambahkan script untuk efek mengetik pada loader --}}
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('loaderTyping', () => ({
-                init() {
-                    // Awasi perubahan pada variabel isLoading
-                    this.$watch('isLoading', (value) => {
-                        if (value) {
-                            // Jika isLoading menjadi true, mulai animasi
-                            this.startTypingEffect();
-                        }
-                    });
-                },
-                startTypingEffect() {
-                    const textToType = "Sedang Memuat Data...";
-                    const element = document.getElementById('loader-typing-effect');
-                    const cursor = document.getElementById('loader-typing-cursor');
-                    if (!element || !cursor) return;
+        function startLoaderTypingEffect() {
+            const textToType = "mohon tunggu sebentar...";
+            const element = document.getElementById('loader-typing-effect');
+            const cursor = document.getElementById('loader-typing-cursor');
+            if (!element || !cursor) return;
 
-                    let index = 0;
-                    element.textContent = ''; // Kosongkan teks setiap kali dimulai
-                    cursor.style.display = 'inline-block'; // Tampilkan kursor
+            let charIndex = 0;
+            let isDeleting = false;
 
-                    function type() {
-                        if (index < textToType.length) {
-                            element.textContent += textToType.charAt(index);
-                            index++;
-                            setTimeout(type, 100);
-                        } else {
-                            // Anda bisa menyembunyikan kursor setelah selesai jika mau
-                            // cursor.style.display = 'none'; 
-                        }
-                    }
-                    type();
+            function typeLoop() {
+                cursor.style.display = 'inline-block';
+                const currentText = textToType.substring(0, charIndex);
+                element.textContent = currentText;
+
+                if (!isDeleting && charIndex < textToType.length) {
+                    charIndex++;
+                    setTimeout(typeLoop, 120);
+                } else if (isDeleting && charIndex > 0) {
+                    charIndex--;
+                    setTimeout(typeLoop, 80);
+                } else {
+                    isDeleting = !isDeleting;
+                    setTimeout(typeLoop, isDeleting ? 2000 : 500); 
                 }
-            }));
-        });
+            }
+            typeLoop();
+        }
     </script>
 
     @stack('scripts')

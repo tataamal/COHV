@@ -1,209 +1,98 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full bg-gray-100">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
-    <title>{{ $title ?? config('app.name', 'Laravel') }} - SAP PO Interface</title>
+    <title>{{ $title ?? 'KMI System' }}</title>
     
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.1.0/uicons-regular-rounded/css/uicons-regular-rounded.css'>
     
-    <!-- Scripts & Styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" xintegrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    
+    <!-- Alpine Core (harus dimuat pertama) -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Alpine Plugins (dimuat setelah core) -->
+    <script src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Pustaka lainnya -->
+    <script defer type="module" src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.6.2/dist/dotlottie-wc.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    
-    <!-- Custom Styles -->
+
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
         [x-cloak] { display: none !important; }
-
-        /* Custom styles for responsive table */
-        @media (max-width: 767px) {
-            .responsive-table thead { display: none; }
-            .responsive-table tr {
-                display: block;
-                margin-bottom: 1.5rem;
-                border-bottom-width: 2px;
-                padding-bottom: 1rem;
-            }
-            .responsive-table tr:last-child {
-                margin-bottom: 0;
-                border-bottom: none;
-            }
-            .responsive-table td {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                text-align: right;
-                padding: 0.5rem 1rem;
-            }
-            .responsive-table td::before {
-                content: attr(data-label);
-                font-weight: 600;
-                text-align: left;
-                margin-right: 1rem;
-            }
-        }
     </style>
-
-    <style>
-        /* Loader dari penyedia — ditambah perbaikan kecil agar pasti jalan */
-        .loader {
-            position: relative;         /* perlu untuk pseudo-elements */
-            display: inline-block;      /* pastikan width/height berlaku */
-            transform: rotateZ(45deg);
-            perspective: 1000px;
-            border-radius: 50%;
-            width: 48px;
-            height: 48px;
-            color: #fff;
-        }
-        .loader:before,
-        .loader:after {
-            content: '';
-            display: block;
-            position: absolute;
-            top: 0; left: 0;
-            width: inherit;
-            height: inherit;
-            border-radius: 50%;
-            transform: rotateX(70deg);
-            animation: 1s spin linear infinite;
-        }
-        .loader:after {
-            color: #FF3D00;
-            transform: rotateY(70deg);
-            animation-delay: .4s;
-        }
-
-        /* Keyframes tambahan dari penyedia (rotate/rotateccw tidak dipakai tapi aman disertakan) */
-        @keyframes rotate {
-            0% { transform: translate(-50%, -50%) rotateZ(0deg); }
-            100% { transform: translate(-50%, -50%) rotateZ(360deg); }
-        }
-        @keyframes rotateccw {
-            0% { transform: translate(-50%, -50%) rotate(0deg); }
-            100% { transform: translate(-50%, -50%) rotate(-360deg); }
-        }
-        @keyframes spin {
-            0%, 100% { box-shadow: .2em 0 0 0 currentcolor; }
-            12%      { box-shadow: .2em .2em 0 0 currentcolor; }
-            25%      { box-shadow: 0 .2em 0 0 currentcolor; }
-            37%      { box-shadow: -.2em .2em 0 0 currentcolor; }
-            50%      { box-shadow: -.2em 0 0 0 currentcolor; }
-            62%      { box-shadow: -.2em -.2em 0 0 currentcolor; }
-            75%      { box-shadow: 0 -.2em 0 0 currentcolor; }
-            87%      { box-shadow: .2em -.2em 0 0 currentcolor; }
-        }
-        </style>
     
-    <!-- Additional Styles -->
     @stack('styles')
-
 </head>
-<body class="h-full">
-    <div x-data="{ sidebarOpen: false, sidebarCollapsed: false }" class="flex h-screen bg-gray-100">
-        
-        <!-- Sidebar Overlay (Mobile) -->
-        <div 
-            x-show="sidebarOpen" 
-            @click="sidebarOpen = false"
-            x-transition:enter="transition-opacity ease-linear duration-300"
-            x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100"
-            x-transition:leave="transition-opacity ease-linear duration-300"
-            x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0"
-            class="fixed inset-0 z-20 bg-black bg-opacity-50 lg:hidden"
-            x-cloak>
+<body 
+    x-data="{ sidebarOpen: false, sidebarCollapsed: window.innerWidth < 1024, isLoading: false }" 
+    @resize.window="sidebarCollapsed = window.innerWidth < 1024"
+    x-init="$watch('isLoading', value => { if (value) startLoaderTypingEffect() })"
+    @link-clicked.window="isLoading = true; setTimeout(() => { window.location.href = $event.detail.href }, 150)"
+    class="h-full bg-gray-100 antialiased">
+    
+    <!-- Halaman Overlay Loading -->
+    <div x-show="isLoading" x-cloak class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
+        <div class="w-96 h-96">
+            <dotlottie-wc src="https://lottie.host/efd6845b-3f14-492b-98a8-9336a08a5f98/RJUcUzKVqm.lottie" speed="1" autoplay loop></dotlottie-wc>
         </div>
+        <h2 class="text-2xl font-bold text-gray-800 tracking-wide -mt-12">
+            <span id="loader-typing-effect"></span>
+            <span id="loader-typing-cursor" class="inline-block w-0.5 h-7 bg-gray-800 animate-pulse ml-1" style="margin-bottom: -5px;"></span>
+        </h2>
+        <p class="mt-2 text-gray-600">Mohon tunggu, kami sedang mengambil data dari SAP.</p>
+    </div>
 
+    <div class="flex h-full">
         <!-- Sidebar -->
         <x-navigation.sidebar />
+        
+        <!-- Backdrop untuk layar kecil -->
+        <div x-show="sidebarOpen" @click="sidebarOpen = false" x-cloak class="fixed inset-0 bg-black/30 z-30 lg:hidden"></div>
 
-        <!-- Main Content Area -->
-        <div class="flex-1 flex flex-col overflow-hidden">
-            
-            <!-- Top Navigation -->
-            <x-navigation.topbar :user="auth()->user()" />
+        <!-- Main Content -->
+        <!-- [DIPERBARUI] Menghapus class margin kiri dinamis. Flexbox akan menangani layout secara otomatis. -->
+        <div class="flex flex-col flex-1">
+            <!-- Topbar -->
+            <x-navigation.topbar />
 
             <!-- Page Content -->
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 sm:p-6">
-                <div class="container mx-auto space-y-6">
-                    {{ $slot }}
-                </div>
+            <main class="flex-1 p-6 sm:p-8 overflow-y-auto">
+                {{ $slot }}
             </main>
         </div>
     </div>
 
-    <!-- Global Loading Overlay -->
-    <div id="global-loading"
-        class="hidden fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black bg-opacity-50"
-        role="status" aria-live="polite" aria-label="Loading">
-    
-    <!-- Spinner dari penyedia -->
-    <span class="loader"></span>
-
-    <!-- Teks kecil -->
-    <p class="mt-4 text-white text-sm font-medium tracking-wide">
-        Sedang mengambil data dari SAP…
-    </p>
-    </div>
-
-    <!-- Scripts -->
-
     <script>
-    (function () {
-        const overlay = document.getElementById('global-loading');
-        if (!overlay) return;
-
-        const show = () => overlay.classList.remove('hidden');
-        const hide = () => overlay.classList.add('hidden');
-
-        // A) Klik pada elemen dengan [data-loading]
-        document.addEventListener('click', (e) => {
-            const trigger = e.target.closest('[data-loading]');
-            if (!trigger) return;
-
-            // Abaikan open-in-new-tab / klik non-left / target=_blank
-            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-            if (e.button !== 0) return;
-            if (trigger.getAttribute('target') === '_blank') return;
-
-            // Opsional: cegah double click pada button
-            if (trigger.tagName === 'BUTTON') {
-            trigger.disabled = true;
-            trigger.classList.add('opacity-70', 'pointer-events-none');
+        function startLoaderTypingEffect() {
+            const textToType = "mohon tunggu sebentar...";
+            const element = document.getElementById('loader-typing-effect');
+            const cursor = document.getElementById('loader-typing-cursor');
+            if (!element || !cursor) return;
+            let charIndex = 0; let isDeleting = false;
+            function typeLoop() {
+                cursor.style.display = 'inline-block';
+                const currentText = textToType.substring(0, charIndex);
+                element.textContent = currentText;
+                if (!isDeleting && charIndex < textToType.length) {
+                    charIndex++; setTimeout(typeLoop, 120);
+                } else if (isDeleting && charIndex > 0) {
+                    charIndex--; setTimeout(typeLoop, 80);
+                } else {
+                    isDeleting = !isDeleting; setTimeout(typeLoop, isDeleting ? 2000 : 500); 
+                }
             }
-
-            show();
-        }, { passive: true });
-
-        // B) Submit form apa pun
-        document.addEventListener('submit', (e) => {
-            const form = e.target;
-            if (!form.matches('form')) return;
-
-            const btn = form.querySelector('button[type="submit"][data-loading]');
-            if (btn) {
-            btn.disabled = true;
-            btn.classList.add('opacity-70', 'pointer-events-none');
-            }
-            show();
-        }, true);
-
-        // C) Pindah halaman (redirect server-side)
-        window.addEventListener('beforeunload', show);
-
-        // Hooks optional untuk AJAX manual:
-        window.addEventListener('loading:show', show);
-        window.addEventListener('loading:hide', hide);
-    })();
+            typeLoop();
+        }
     </script>
+
     @stack('scripts')
 </body>
 </html>
+
