@@ -476,7 +476,7 @@ def manual_trigger():
 def run_both_mode():
     """Menjadwalkan job dan juga memungkinkan pemicu manual kapan saja."""
     run_job()
-    schedule.every(2).hours.do(run_job)
+    schedule.every(0.5).hours.do(run_job)
     
     manual_thread = threading.Thread(target=manual_trigger, daemon=True)
     manual_thread.start()
@@ -503,7 +503,7 @@ if __name__ == "__main__":
             "Pilih mode eksekusi:\n"
             "'manual'   - Menjalankan sinkronisasi sekali saja lalu keluar.\n"
             "'otomatis' - Menjalankan sekali, lalu dijadwalkan setiap 2 jam (default).\n"
-            "'both'     - Dijadwalkan setiap 2 jam DAN bisa dipicu manual dengan menekan 'Enter'."
+            "'both'     - Dijadwalkan setiap 20 jam DAN bisa dipicu manual dengan menekan 'Enter'."
         )
     )
     args = parser.parse_args()

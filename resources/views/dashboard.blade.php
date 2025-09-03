@@ -1,21 +1,38 @@
 <x-layouts.landing title="Welcome to KMI System">
 
+    {{-- [MODIFIKASI] Menambahkan sedikit CSS untuk status "selesai" pada catatan --}}
+    @push('styles')
+    <style>
+        .note-item.completed {
+            background-color: #f0fdf4; /* Tailwind's green-50 */
+            border-left-color: #22c55e; /* green-500 */
+        }
+        .note-item.completed .note-message,
+        .note-item.completed .note-meta {
+            text-decoration: line-through;
+            color: #6b7280; /* gray-500 */
+        }
+    </style>
+    @endpush
+
+    @php
+        $user = Auth::user() ?? (object)['name' => 'User', 'role' => 'Guest'];
+    @endphp
+
     <div class="flex flex-col min-h-screen p-6 md:p-8">
-        <!-- Header -->
         <header class="w-full max-w-7xl mx-auto mb-8">
-             <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <div class="h-10 w-10 p-1.5 rounded-full shadow-sm bg-white flex items-center justify-center">
                         <img src="{{ asset('images/KMI.png') }}" alt="Logo KMI">
                     </div>
                     <h1 class="text-base font-semibold text-gray-800 hidden sm:block">PT. Kayu Mabel Indonesia</h1>
                 </div>
-                 
-                <!-- Profile Dropdown -->
+                
                 <div x-data="{ open: false }" class="relative">
                     <button @click="open = !open" class="flex items-center space-x-4 focus:outline-none">
-                        <span class="font-semibold text-gray-700 hidden sm:block">{{ Auth::user()->name ?? '[Nama User]' }}</span>
-                        <img class="h-9 w-9 rounded-full object-cover ring-2 ring-offset-2 ring-purple-500" src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name ?? 'User') }}&background=8b5cf6&color=fff" alt="Avatar">
+                        <span class="font-semibold text-gray-700 hidden sm:block">{{ $user->name }}</span>
+                        <i class="fa-solid fa-user"></i>
                     </button>
 
                     <div x-show="open" 
@@ -31,7 +48,6 @@
                         
                         <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil Saya</a>
                         
-                        <!-- Logout Form -->
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
@@ -43,7 +59,6 @@
             </div>
         </header>
         
-        <!-- Main Content: Welcome & Plant Selection -->
         <main class="flex-1 flex flex-col items-center justify-center text-center">
             <h1 class="text-4xl sm:text-5xl font-bold text-gray-800 tracking-tight">Selamat Datang!</h1>
             <p class="mt-4 text-lg text-gray-600 max-w-2xl min-h-[28px]">
@@ -51,7 +66,6 @@
                 <span id="typing-cursor" class="inline-block w-0.5 h-6 bg-gray-800 animate-pulse ml-1" style="margin-bottom: -4px;"></span>
             </p>
             
-            <!-- Tata letak kartu yang lebih dinamis -->
             <div class="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-7xl">
                 @php
                     $colorClasses = [
@@ -88,7 +102,6 @@
             </div>
         </main>
 
-        <!-- Footer Section: Calendar & Notes -->
         <footer class="w-full max-w-7xl mx-auto mt-12">
             <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
                 <div class="lg:col-span-3 bg-white p-6 rounded-2xl shadow-lg">
@@ -103,13 +116,34 @@
                         <div id="calendar-grid" class="grid grid-cols-7 gap-1 text-center"></div>
                     </div>
                 </div>
+
                 <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg flex flex-col">
                     <h2 class="text-xl font-bold text-gray-800 mb-4">Catatan Tim</h2>
                     <form id="note-form" class="mb-4">
-                        <textarea id="note-input" class="w-full h-24 p-3 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-purple-500" placeholder="Tinggalkan pesan..."></textarea>
-                        <button type="submit" class="mt-2 w-full bg-purple-600 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-purple-700 transition">Simpan Catatan</button>
+                        <div class="mb-3">
+                            <label for="recipient-select" class="block text-sm font-medium text-gray-700 mb-1">Untuk:</label>
+                             <select id="recipient-select" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" required>
+                                <option value="" disabled selected>Pilih penerima...</option>
+                                @if(isset($allUsers) && $allUsers->count() > 0)
+                                    @foreach($allUsers->where('id', '!=', Auth::id()) as $user)
+                                        <option value="{{ $user->id }}">{{ $user->nama }}</option> 
+                                    @endforeach
+                                @endif
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                             <label for="note-input" class="block text-sm font-medium text-gray-700 mb-1">Pesan:</label>
+                            <textarea id="note-input" class="w-full h-24 p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-purple-500" placeholder="Tinggalkan pesan..." required></textarea>
+                        </div>
+
+                        <button type="submit" class="w-full bg-purple-600 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-purple-700 transition">Simpan Catatan</button>
                     </form>
-                    <div id="notes-list" class="flex-1 overflow-y-auto space-y-3 pr-2"></div>
+                    
+                    {{-- [PERBAIKAN UTAMA] Menghapus kelas 'h-48' agar 'flex-1' berfungsi --}}
+                    <div id="notes-list" class="flex-1 overflow-y-auto space-y-3 pr-2 border-t pt-4">
+                        {{-- Catatan akan dirender oleh JavaScript di sini --}}
+                    </div>
                 </div>
             </div>
         </footer>
@@ -117,130 +151,205 @@
     
     @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // --- Fungsi Efek Mengetik Generik ---
-            function runTypingEffect(elementId, cursorId, text) {
-                const element = document.getElementById(elementId);
-                const cursor = document.getElementById(cursorId);
-                if (!element || !cursor) return;
-
-                let index = 0;
-                element.textContent = '';
-                cursor.style.display = 'inline-block';
-
-                function type() {
-                    if (index < text.length) {
-                        element.textContent += text.charAt(index);
-                        index++;
-                        setTimeout(type, 80);
-                    } else {
-                        cursor.style.display = 'none';
-                    }
-                }
-                type();
-            }
-
-            // --- [DIPERBARUI] Memisahkan inisialisasi ---
-            runTypingEffect('typing-effect', 'typing-cursor', "Bagian mana yang ingin anda kerjakan hari ini?");
-            
-            // --- [BARU] Pemicu untuk efek mengetik pada loader ---
-            document.body.addEventListener('alpine:initialized', () => {
-                Alpine.effect(() => {
-                    const isLoading = Alpine.store('isLoading').on;
-                    if (isLoading) {
-                        runTypingEffect('loader-typing-effect', 'loader-typing-cursor', "Sedang Memuat Data...");
-                    }
-                });
-            });
-
-            // --- Kalender Interaktif ---
-            const monthYearEl = document.getElementById('calendar-month-year');
-            const calendarGridEl = document.getElementById('calendar-grid');
-            const prevMonthBtn = document.getElementById('prev-month');
-            const nextMonthBtn = document.getElementById('next-month');
-            let currentDate = new Date();
-
-            function renderCalendar() {
-                if (!calendarGridEl) return;
-                calendarGridEl.innerHTML = '';
-                const month = currentDate.getMonth();
-                const year = currentDate.getFullYear();
-                const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-                if(monthYearEl) monthYearEl.textContent = `${monthNames[month]} ${year}`;
-
-                const firstDayOfMonth = new Date(year, month, 1).getDay();
-                const daysInMonth = new Date(year, month + 1, 0).getDate();
-                
-                const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-                dayNames.forEach(day => {
-                    const dayEl = document.createElement('div');
-                    dayEl.className = 'font-semibold text-sm text-gray-500 pb-2';
-                    dayEl.textContent = day;
-                    calendarGridEl.appendChild(dayEl);
-                });
-
-                for (let i = 0; i < firstDayOfMonth; i++) calendarGridEl.appendChild(document.createElement('div'));
-
-                const today = new Date();
-                for (let day = 1; day <= daysInMonth; day++) {
-                    const dayCell = document.createElement('div');
-                    dayCell.className = 'h-10 flex items-center justify-center text-sm rounded-full cursor-pointer transition';
-                    dayCell.textContent = day;
-                    if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
-                        dayCell.classList.add('bg-purple-600', 'text-white', 'font-bold');
-                    } else {
-                        dayCell.classList.add('text-gray-700', 'hover:bg-gray-100');
-                    }
-                    calendarGridEl.appendChild(dayCell);
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- Fungsi Efek Mengetik Generik (Kode Anda yang sudah ada) ---
+        function runTypingEffect(elementId, cursorId, text) {
+            const element = document.getElementById(elementId);
+            const cursor = document.getElementById(cursorId);
+            if (!element || !cursor) return;
+            let index = 0;
+            element.textContent = '';
+            cursor.style.display = 'inline-block';
+            function type() {
+                if (index < text.length) {
+                    element.textContent += text.charAt(index);
+                    index++;
+                    setTimeout(type, 80);
+                } else {
+                    cursor.style.display = 'none';
                 }
             }
-            
-            if(prevMonthBtn) prevMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); });
-            if(nextMonthBtn) nextMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); });
-            renderCalendar();
-
-            // --- Fitur Catatan Bersama ---
-            const noteForm = document.getElementById('note-form');
-            const noteInput = document.getElementById('note-input');
-            const notesList = document.getElementById('notes-list');
-            let notes = [
-                { user: 'Admin', text: 'Rapat produksi mingguan jam 3 sore ini.', time: '10:30' },
-                { user: 'Budi', text: 'Tolong cek stok bahan baku untuk Plant B.', time: '11:15' }
-            ];
-
-            function renderNotes() {
-                if (!notesList) return;
-                notesList.innerHTML = '';
-                if (notes.length === 0) {
-                    notesList.innerHTML = '<p class="text-center text-gray-400 mt-8">Belum ada catatan.</p>';
-                    return;
-                }
-                notes.forEach(note => {
-                    const noteEl = document.createElement('div');
-                    noteEl.className = 'bg-gray-50 p-4 rounded-lg border border-gray-200';
-                    noteEl.innerHTML = `<p class="text-gray-800 text-sm">${note.text}</p><div class="text-xs text-gray-400 mt-2 flex justify-between"><span>Oleh: <strong>${note.user}</strong></span><span>${note.time}</span></div>`;
-                    notesList.appendChild(noteEl);
-                });
-            }
-
-            if(noteForm) noteForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const noteText = noteInput.value.trim();
-                if (noteText) {
-                    const now = new Date();
-                    const newNote = {
-                        user: '{{ Auth::user()->name ?? '[Nama User]' }}',
-                        text: noteText,
-                        time: now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit'})
-                    };
-                    notes.unshift(newNote);
-                    renderNotes();
-                    noteInput.value = '';
+            type();
+        }
+        runTypingEffect('typing-effect', 'typing-cursor', "Bagian mana yang ingin anda kerjakan hari ini?");
+        
+        document.body.addEventListener('alpine:initialized', () => {
+            Alpine.effect(() => {
+                const isLoading = Alpine.store('isLoading').on;
+                if (isLoading) {
+                    runTypingEffect('loader-typing-effect', 'loader-typing-cursor', "Sedang Memuat Data...");
                 }
             });
-            renderNotes();
         });
+
+        // --- Kalender Interaktif (Kode Anda yang sudah ada) ---
+        const monthYearEl = document.getElementById('calendar-month-year');
+        const calendarGridEl = document.getElementById('calendar-grid');
+        const prevMonthBtn = document.getElementById('prev-month');
+        const nextMonthBtn = document.getElementById('next-month');
+        let currentDate = new Date();
+
+        function renderCalendar() {
+            if (!calendarGridEl) return;
+            calendarGridEl.innerHTML = '';
+            const month = currentDate.getMonth();
+            const year = currentDate.getFullYear();
+            const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            if(monthYearEl) monthYearEl.textContent = `${monthNames[month]} ${year}`;
+            const firstDayOfMonth = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+            dayNames.forEach(day => {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'font-semibold text-sm text-gray-500 pb-2';
+                dayEl.textContent = day;
+                calendarGridEl.appendChild(dayEl);
+            });
+            for (let i = 0; i < firstDayOfMonth; i++) calendarGridEl.appendChild(document.createElement('div'));
+            const today = new Date();
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('div');
+                dayCell.className = 'h-10 flex items-center justify-center text-sm rounded-full cursor-pointer transition';
+                dayCell.textContent = day;
+                if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                    dayCell.classList.add('bg-purple-600', 'text-white', 'font-bold');
+                } else {
+                    dayCell.classList.add('text-gray-700', 'hover:bg-gray-100');
+                }
+                calendarGridEl.appendChild(dayCell);
+            }
+        }
+        if(prevMonthBtn) prevMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); });
+        if(nextMonthBtn) nextMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); });
+        renderCalendar();
+
+        // --- [PENGGANTI] Fitur Catatan Tim dengan AJAX ---
+        const noteForm = document.getElementById('note-form');
+        const noteInput = document.getElementById('note-input');
+        const notesList = document.getElementById('notes-list');
+        const recipientSelect = document.getElementById('recipient-select');
+        
+        // Function to get the CSRF token
+        function getCsrfToken() {
+            return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        }
+
+        // Function to render notes into the list
+        function renderNotes(notes) {
+            if (!notesList) return;
+            notesList.innerHTML = '';
+            if (notes.length === 0) {
+                notesList.innerHTML = '<p class="text-center text-gray-400 mt-8">Belum ada catatan.</p>';
+                return;
+            }
+
+            notes.forEach(note => {
+                const noteItem = document.createElement('div');
+                const isCompleted = note.completed ? 'completed' : '';
+                const buttonBg = note.completed ? 'bg-green-600' : 'bg-gray-200';
+                noteItem.className = `note-item relative bg-yellow-50 p-3 rounded-lg shadow-sm border-l-4 border-yellow-400 transition-all duration-300 ${isCompleted}`;
+                noteItem.dataset.id = note.id;
+
+                const noteTime = new Date(note.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+                noteItem.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="pr-2">
+                            <p class="note-meta text-xs text-gray-500 mb-1">
+                                <strong>Untuk:</strong> ${note.recipient.nama}
+                            </p>
+                            <p class="note-message text-sm text-gray-800 break-words">${note.message}</p>
+                        </div>
+                        <button class="complete-btn flex-shrink-0 w-8 h-8 rounded-full ${buttonBg} hover:bg-green-500 text-white flex items-center justify-center transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        </button>
+                    </div>
+                    <p class="text-right text-xs text-gray-400 mt-2">
+                        <em>${noteTime} - Dari: ${note.sender.nama}</em>
+                    </p>
+                `;
+                notesList.appendChild(noteItem);
+            });
+        }
+
+        // Function to fetch notes from the server
+        async function fetchNotes() {   
+            try {
+                // [UBAH INI] Gunakan route baru yang tidak perlu parameter
+                const response = await fetch(`{{ route('notes.index') }}`); 
+
+                if (!response.ok) throw new Error('Gagal mengambil data catatan');
+                const notes = await response.json();
+                renderNotes(notes);
+            } catch (error) {
+                console.error('Error fetching notes:', error);
+                notesList.innerHTML = '<p class="text-center text-red-500 mt-8">Gagal memuat catatan.</p>';
+            }
+        }
+
+        // Event listener for form submission
+        if(noteForm) noteForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const message = noteInput.value.trim();
+            const recipientId = recipientSelect.value;
+
+            if (!message || !recipientId) return;
+
+            try {
+                const response = await fetch(`{{ route('notes.store') }}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': getCsrfToken(),
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        recipient_id: recipientId,
+                        message: message,
+                    }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('Server error:', errorData);
+                    throw new Error('Gagal menyimpan catatan');
+                }
+                
+                noteInput.value = '';
+                recipientSelect.selectedIndex = 0;
+                fetchNotes(); // Fetch the latest data
+            } catch (error) {
+                console.error('Error saving note:', error);
+                alert('Gagal menyimpan catatan. Periksa console untuk detail.');
+            }
+        });
+
+        // Event listener for the "complete" button (event delegation)
+        if(notesList) notesList.addEventListener('click', async function(e) {
+            const completeButton = e.target.closest('.complete-btn');
+            if (completeButton) {
+                const noteItem = completeButton.closest('.note-item');
+                const noteId = noteItem.dataset.id;
+
+                try {
+                    const response = await fetch(`/notes/${noteId}/status`, {
+                        method: 'PATCH',
+                        headers: {
+                            'X-CSRF-TOKEN': getCsrfToken(),
+                            'Accept': 'application/json',
+                        },
+                    });
+                    if (!response.ok) throw new Error('Gagal update status');
+                    fetchNotes(); // Fetch the latest data
+                } catch (error) {
+                    console.error('Error updating status:', error);
+                }
+            }
+        });
+
+        // Call fetchNotes() when the page first loads
+        fetchNotes();
+    });
     </script>
     @endpush
 </x-layouts.landing>
-

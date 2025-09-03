@@ -11,6 +11,7 @@ use App\Models\ProductionTData3;
 use App\Models\ProductionTData4;
 use App\Models\Kode;                  // Import model Kode
 use App\Models\SapUser;                 // Import model SapUser
+use App\Models\Note;
 
 class AdminController extends Controller
 {
@@ -135,6 +136,7 @@ class AdminController extends Controller
         $outstandingReservasi = ProductionTData4::where('WERKSX', $kode)
                                     ->whereColumn('KALAB', '<', 'BDMNG')
                                     ->count();
+
         return view('Admin.dashboard', compact(
             'TData1', 
             'TData2', 
@@ -145,7 +147,7 @@ class AdminController extends Controller
             'datasets',
             'doughnutChartLabels',
             'doughnutChartDatasets',
-            'kode'
+            'kode',
         ));
     }
 
@@ -166,25 +168,16 @@ class AdminController extends Controller
                 // 2. Cari SapUser berdasarkan sap_id
                 $sapUser = SapUser::where('sap_id', $sapId)->first();
             } 
-            elseif ($user->role === 'korlap') {
-                // 1. Ambil 'nik' dari email pengguna
-                $nik = str_replace('@kmi.local', '', $user->email);
-                // 2. Cari record di tabel 'kodes' berdasarkan NIK
-                $kode = Kode::where('nik', $nik)->first();
-                
-                // 3. Jika ditemukan, ambil SapUser yang berelasi
-                if ($kode) {
-                    $sapUser = $kode->sapUser;
-                }
-            }
 
             // Jika SapUser ditemukan, ambil semua 'kodes' (plant) yang berelasi dengannya
             if ($sapUser) {
                 $plants = $sapUser->kode()->get();
             }
+            $allUsers = SapUser::where('id', '!=', Auth::id())->get();
+            // dd($allUsers);
         }
         
         // Kirim data 'plants' ke view 'dashboard-landing'
-        return view('dashboard', compact('plants'));
+        return view('dashboard', compact('plants','allUsers'));
     }
 }

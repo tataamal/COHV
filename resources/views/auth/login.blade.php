@@ -1,6 +1,6 @@
 <x-layouts.guest>
     <x-slot:title>
-        Login
+        Admin Login
     </x-slot:title>
 
     {{-- KONTEN UTAMA HALAMAN LOGIN --}}
@@ -19,8 +19,8 @@
 
                 {{-- Judul Form --}}
                 <div class="text-left mb-8">
-                    <h2 id="form-title" class="text-3xl font-bold tracking-tight text-gray-900">Login Korlap</h2>
-                    <p class="mt-2 text-sm text-gray-600">Selamat datang kembali!</p>
+                    <h2 id="form-title" class="text-3xl font-bold tracking-tight text-gray-900">Login Admin</h2>
+                    <p class="mt-2 text-sm text-gray-600">Silakan masukkan kredensial Anda untuk melanjutkan.</p>
                 </div>
                 
                 {{-- Alert Error --}}
@@ -33,46 +33,11 @@
 
                 {{-- Card Wrapper untuk Form --}}
                 <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
-                    <form id="korlap-form" class="space-y-4" action="{{ route('login.korlap') }}" method="POST">
-                        @csrf
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label for="kode_korlap" class="block text-sm font-medium text-gray-700 mb-1">Kode Korlap</label>
-                                <input id="kode_korlap" name="kode_korlap" type="text" required autofocus placeholder="Kode"
-                                       class="block w-full rounded-lg border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500 sm:text-sm transition duration-150 ease-in-out">
-                            </div>
-                            <div>
-                                <label for="nik" class="block text-sm font-medium text-gray-700 mb-1">NIK</label>
-                                <input id="nik" name="nik" type="number" required placeholder="NIK Karyawan"
-                                       class="block w-full rounded-lg border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500 sm:text-sm transition duration-150 ease-in-out">
-                            </div>
-                        </div>
-                        <div>
-                            <label for="korlap_sap_user_id" class="block text-sm font-medium text-gray-700 mb-1">SAP User ID</label>
-                            <input id="korlap_sap_user_id" name="sap_user_id" type="text" required readonly placeholder="Otomatis terisi"
-                                   class="block w-full rounded-lg border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 bg-gray-100 cursor-not-allowed sm:text-sm transition duration-150 ease-in-out">
-                        </div>
-                        <div>
-                            <label for="korlap_password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                            <input id="korlap_password" name="sap_password" type="password" required placeholder="Masukkan Password"
-                                   class="block w-full rounded-lg border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500 sm:text-sm transition duration-150 ease-in-out">
-                        </div>
-                        <div class="pt-4">
-                            <button type="submit" class="group flex w-full justify-center items-center rounded-lg border border-transparent bg-purple-600 py-3 px-4 text-sm font-semibold text-white shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-300 ease-in-out disabled:opacity-75 disabled:cursor-not-allowed">
-                                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                <span class="button-text">Masuk</span>
-                            </button>
-                        </div>
-                    </form>
-
-                    <form id="admin-form" class="space-y-4 hidden" action="{{ route('login.admin') }}" method="POST">
+                    <form id="admin-form" class="space-y-4" action="{{ route('login.admin') }}" method="POST">
                         @csrf
                         <div>
                             <label for="admin_sap_id" class="block text-sm font-medium text-gray-700 mb-1">SAP ID</label>
-                            <input id="admin_sap_id" name="sap_id" type="text" required placeholder="Masukkan SAP ID"
+                            <input id="admin_sap_id" name="sap_id" type="text" required autofocus placeholder="Masukkan SAP ID"
                                    class="block w-full rounded-lg border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500 sm:text-sm transition duration-150 ease-in-out">
                         </div>
                         <div>
@@ -86,15 +51,10 @@
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                <span class="button-text">Masuk sebagai Admin</span>
+                                <span class="button-text">Masuk</span>
                             </button>
                         </div>
                     </form>
-                </div>
-                
-                <div class="text-center mt-6">
-                    <button id="switch-to-admin" class="text-sm font-medium text-purple-600 hover:text-purple-500">Login sebagai Admin</button>
-                    <button id="switch-to-korlap" class="text-sm font-medium text-purple-600 hover:text-purple-500 hidden">Login sebagai Korlap</button>
                 </div>
             </div>
         </div>
@@ -180,26 +140,7 @@
     @push('scripts')
     <script>
         function initializeApp() {
-            // ... (Fungsi form switch dan fetch SAP ID tidak berubah) ...
-            const korlapForm = document.getElementById('korlap-form');
-            const adminForm = document.getElementById('admin-form');
-            const formTitle = document.getElementById('form-title');
-            const switchToAdminBtn = document.getElementById('switch-to-admin');
-            const switchToKorlapBtn = document.getElementById('switch-to-korlap');
-            switchToAdminBtn.addEventListener('click', function(e) { e.preventDefault(); korlapForm.classList.add('hidden'); adminForm.classList.remove('hidden'); switchToAdminBtn.classList.add('hidden'); switchToKorlapBtn.classList.remove('hidden'); formTitle.textContent = 'Login Admin'; });
-            switchToKorlapBtn.addEventListener('click', function(e) { e.preventDefault(); adminForm.classList.add('hidden'); korlapForm.classList.remove('hidden'); switchToKorlapBtn.classList.add('hidden'); switchToAdminBtn.classList.remove('hidden'); formTitle.textContent = 'Login Korlap'; });
-            const kodeKorlapInput = document.getElementById('kode_korlap');
-            const sapUserIdInput = document.getElementById('korlap_sap_user_id');
-            kodeKorlapInput.addEventListener('blur', async function() {
-                const kode = this.value.trim(); if (!kode) { sapUserIdInput.value = ''; return; }
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                try {
-                    const response = await fetch('/api/get-sap-user-id', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }, body: JSON.stringify({ kode_admin: kode }) });
-                    if (response.ok) { const result = await response.json(); sapUserIdInput.value = result.sap_user_id || ''; } else { sapUserIdInput.value = `SAP_${kode.toUpperCase()}`; }
-                } catch (error) { console.error('Error fetching SAP ID:', error); sapUserIdInput.value = `SAP_${kode.toUpperCase()}`; }
-            });
-
-            // ... (Fungsi count up dan interactive panel tidak berubah) ...
+            // Fungsi untuk animasi angka naik
             function animateCountUp(el, endValue, duration) {
                 let startTime = null;
                 const startValue = 0;
@@ -208,10 +149,16 @@
                     const progress = Math.min((timestamp - startTime) / duration, 1);
                     const currentValue = Math.floor(progress * (endValue - startValue) + startValue);
                     el.innerText = currentValue.toLocaleString('id-ID');
-                    if (progress < 1) { window.requestAnimationFrame(step); } else { el.innerText = endValue.toLocaleString('id-ID'); }
+                    if (progress < 1) {
+                        window.requestAnimationFrame(step);
+                    } else {
+                        el.innerText = endValue.toLocaleString('id-ID');
+                    }
                 };
                 window.requestAnimationFrame(step);
             }
+
+            // Fungsi untuk panel interaktif di sebelah kanan
             function initializeInteractivePanel() {
                 const panel = document.getElementById('interactive-panel');
                 const card = document.getElementById('interactive-card');
@@ -229,22 +176,20 @@
                 });
             }
 
-            // --- [BARU] FUNGSI ANIMASI LOADING SAAT SUBMIT ---
+            // Fungsi untuk menampilkan loading spinner pada tombol saat form disubmit
             function initializeLoadingOnSubmit() {
-                const forms = [korlapForm, adminForm];
-                forms.forEach(form => {
-                    if (form) {
-                        form.addEventListener('submit', function() {
-                            const button = form.querySelector('button[type="submit"]');
-                            const buttonText = button.querySelector('.button-text');
-                            const spinner = button.querySelector('svg');
+                const adminForm = document.getElementById('admin-form');
+                if (adminForm) {
+                    adminForm.addEventListener('submit', function() {
+                        const button = adminForm.querySelector('button[type="submit"]');
+                        const buttonText = button.querySelector('.button-text');
+                        const spinner = button.querySelector('svg');
 
-                            button.disabled = true;
-                            if (spinner) spinner.classList.remove('hidden');
-                            if (buttonText) buttonText.classList.add('hidden');
-                        });
-                    }
-                });
+                        button.disabled = true;
+                        if (spinner) spinner.classList.remove('hidden');
+                        if (buttonText) buttonText.classList.add('hidden');
+                    });
+                }
             }
 
             // --- MENJALANKAN SEMUA FUNGSI ---
@@ -254,7 +199,7 @@
             if(viewsCountEl) animateCountUp(viewsCountEl, 32640, 1500);
             
             initializeInteractivePanel();
-            initializeLoadingOnSubmit(); // Menambahkan fungsi loading
+            initializeLoadingOnSubmit();
         }
 
         if (document.readyState === 'loading') {
@@ -265,4 +210,3 @@
     </script>
     @endpush
 </x-layouts.guest>
-

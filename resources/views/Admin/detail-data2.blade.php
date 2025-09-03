@@ -901,6 +901,9 @@
                     <td class="px-4 py-3 text-center">${t1.STEUS || '-'}</td>
                     <td class="px-4 py-3">${t1.KTEXT || '-'}</td>
                     <td class="px-4 py-3 text-center">${t1.ARBPL || '-'}</td>
+                    <td class="px-4 py-3 text-center">${t1.PV1 || '-'}</td>
+                    <td class="px-4 py-3 text-center">${t1.PV2 || '-'}</td>
+                    <td class="px-4 py-3 text-center">${t1.PV3 || '-'}</td>
                     <td class="px-4 py-3">
                         <div class="flex gap-2 justify-center">
                             <button class="px-2 py-1 text-xs font-semibold text-indigo-700 bg-indigo-100 rounded-md hover:bg-indigo-200" onclick="openChangeWcModal('${t1.AUFNR}', '${t1.VORNR}', '${t1.ARBPL || ''}')">Edit WC</button>
@@ -923,6 +926,9 @@
                                 <th class="px-4 py-3">Control Key</th>
                                 <th class="px-4 py-3">Description</th>
                                 <th class="px-4 py-3">Work Center</th>
+                                <th class="px-4 py-3">PV 1</th>
+                                <th class="px-4 py-3">PV 2</th>
+                                <th class="px-4 py-3">PV 3</th>
                                 <th class="px-4 py-3 text-center">Action</th>
                             </tr>
                         </thead>

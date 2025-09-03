@@ -9,6 +9,7 @@ use App\Http\Controllers\KorlapController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Data4Controller;
 use App\Http\Controllers\ManufactController;
+use App\Http\Controllers\NoteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -55,6 +56,10 @@ Route::middleware('auth')->group(function (){
     // route untuk kelola T-DATA1
     Route::post('/changeWC', [Data1Controller::class,'changeWC'])->name('change-wc');
     Route::post('/changePV', [Data1Controller::class,'changePV'])->name('change-pv');
+
+    Route::get('notes/', [NoteController::class, 'index'])->name('notes.index');
+    Route::post('notes/', [NoteController::class, 'store'])->name('notes.store');
+    Route::patch('notes/{note}/complete', [NoteController::class, 'markAsComplete'])->name('notes.complete'); 
 
 });
 

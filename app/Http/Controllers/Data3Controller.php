@@ -170,7 +170,7 @@ class Data3Controller extends Controller
                     'Accept'         => 'application/json',
                 ])
                 ->timeout(30)
-                ->post($flaskBase.'/api/schedule_orderr', [
+                ->post($flaskBase.'/api/schedule_order', [
                     'AUFNR' => $data['aufnr'],
                     'DATE'  => $dateYmd,
                     'TIME'  => $timeColon,
