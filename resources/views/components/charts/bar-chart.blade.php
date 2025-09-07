@@ -1,81 +1,102 @@
 @props([
-    'chartId',
-    'labels' => [],
-    'datasets' => [],
-    'height' => 'h-64 sm:h-72',
-    'title' => null
+  'chartId' => 'myChart',
+  'type' => 'bar',
+  'labels' => [],
+  'datasets' => [],
+  'height' => 'h-96'
 ])
 
-<div {{ $attributes->merge(['class' => 'relative ' . $height]) }}>
-    @if($title)
-        <h4 class="text-lg font-medium text-gray-700 mb-4">{{ $title }}</h4>
-    @endif
-    <canvas id="{{ $chartId }}"></canvas>
+<div class="{{ $height }}">
+  <canvas id="{{ $chartId }}" class="w-full h-full"></canvas>
 </div>
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const ctx = document.getElementById('{{ $chartId }}').getContext('2d');
-    
-    const chartData = {
-        labels: @json($labels),
-        datasets: @json($datasets)
+(function () {
+  const id = '{{ $chartId }}';
+  const type = @json($type ?? 'bar');           // tidak mengubah data
+  const isPieLike = ['pie','doughnut'].includes(type);
+
+  function makeChart() {
+    const canvas = document.getElementById(id);
+    if (!canvas) return;
+
+    // Bersihkan instance lama bila ada (mis. re-render)
+    if (canvas._chartInstance) {
+      try { canvas._chartInstance.destroy(); } catch(_) {}
+    }
+
+    const ctx = canvas.getContext('2d');
+
+    // Opsi dasar (UI saja)
+    const baseOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            font: { family: "'Plus Jakarta Sans', sans-serif", size: 12 },
+            color: '#6B7280',
+            padding: 20
+          }
+        },
+        tooltip: {
+          backgroundColor: '#111827',
+          titleFont: { family: "'Plus Jakarta Sans', sans-serif", weight: 'bold' },
+          bodyFont: { family: "'Plus Jakarta Sans', sans-serif" },
+          padding: 12,
+          cornerRadius: 8,
+          boxPadding: 4
+        }
+      }
     };
-    
-    new Chart(ctx, {
-        type: 'bar',
-        data: chartData,
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: { 
-                    beginAtZero: true, 
-                    grid: { color: '#e5e7eb' },
-                    ticks: {
-                        font: { size: window.innerWidth < 640 ? 10 : 12 }
-                    }
-                },
-                x: { 
-                    grid: { display: false },
-                    ticks: {
-                        font: { size: window.innerWidth < 640 ? 10 : 12 },
-                        callback: function(value, index, values) {
-                            const label = this.getLabelForValue(value);
-                            if (window.innerWidth < 640) {
-                                return label.replace('Order ', '');
-                            }
-                            return label;
-                        }
-                    }
-                }
-            },
-            plugins: {
-                legend: { 
-                    position: 'top',
-                    labels: {
-                        font: { size: window.innerWidth < 640 ? 10 : 12 },
-                        padding: window.innerWidth < 640 ? 10 : 20
-                    }
-                },
-                tooltip: { mode: 'index', intersect: false }
-            },
-            interaction: { mode: 'nearest', axis: 'x', intersect: false }
+
+    const cartesianScales = {
+      y: {
+        beginAtZero: true,
+        grid: { color: '#E5E7EB', borderDash: [3,3] },
+        ticks: { font: { family: "'Plus Jakarta Sans', sans-serif" }, color: '#6B7280' }
+      },
+      x: {
+        grid: { display: false },
+        ticks: { font: { family: "'Plus Jakarta Sans', sans-serif" }, color: '#6B7280' }
+      }
+    };
+
+    const options = isPieLike
+      ? {
+          ...baseOptions,
+          // Pie/Doughnut tidak pakai axis/ticks/grid
+          scales: undefined,
+          // Hilangkan garis irisan
+          elements: { arc: { borderWidth: 0 } }
+          // cutout: '60%', // <- aktifkan jika ingin doughnut lebih tipis
         }
+      : {
+          ...baseOptions,
+          scales: cartesianScales
+        };
+
+    const chart = new Chart(ctx, {
+      type,
+      data: {
+        labels: @json($labels),     // DATA TIDAK DIUBAH
+        datasets: @json($datasets)  // DATA TIDAK DIUBAH
+      },
+      options
     });
-    
-    // Handle window resize for chart responsiveness
-    window.addEventListener('resize', function() {
-        const chart = Chart.getChart(ctx);
-        if (chart) {
-            chart.options.scales.x.ticks.font.size = window.innerWidth < 640 ? 10 : 12;
-            chart.options.scales.y.ticks.font.size = window.innerWidth < 640 ? 10 : 12;
-            chart.options.plugins.legend.labels.font.size = window.innerWidth < 640 ? 10 : 12;
-            chart.options.plugins.legend.labels.padding = window.innerWidth < 640 ? 10 : 20;
-            chart.update();
-        }
-    });
-});
+
+    canvas._chartInstance = chart;
+  }
+
+  // Pastikan Chart.js sudah siap & DOM siap
+  const start = () => (window.Chart ? makeChart() : window.addEventListener('load', makeChart, { once: true }));
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true });
+  } else {
+    start();
+  }
+})();
 </script>
 @endpush

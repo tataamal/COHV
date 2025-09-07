@@ -1,108 +1,113 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full bg-gray-100">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
-    <title>{{ $title ?? config('app.name', 'Laravel') }} - SAP PO Interface</title>
+    <title>{{ $title ?? 'KMI System' }}</title>
     
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.1.0/uicons-regular-rounded/css/uicons-regular-rounded.css'>
     
-    <!-- Scripts & Styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" xintegrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
     
-    <!-- Custom Styles -->
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        [x-cloak] { display: none !important; }
-
-        /* Custom styles for responsive table */
-        @media (max-width: 767px) {
-            .responsive-table thead { display: none; }
-            .responsive-table tr {
-                display: block;
-                margin-bottom: 1.5rem;
-                border-bottom-width: 2px;
-                padding-bottom: 1rem;
-            }
-            .responsive-table tr:last-child {
-                margin-bottom: 0;
-                border-bottom: none;
-            }
-            .responsive-table td {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                text-align: right;
-                padding: 0.5rem 1rem;
-            }
-            .responsive-table td::before {
-                content: attr(data-label);
-                font-weight: 600;
-                text-align: left;
-                margin-right: 1rem;
-            }
+    {{-- ✅ PERBAIKAN: Mengkonfigurasi Tailwind untuk menggunakan font default baru --}}
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                },
+            },
         }
+    </script>
+
+    <!-- Alpine Core (harus dimuat pertama) -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Alpine Plugins (dimuat setelah core) -->
+    <script src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Pustaka lainnya -->
+    <script defer type="module" src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.6.2/dist/dotlottie-wc.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* Style ini tidak lagi diperlukan karena sudah dihandle oleh config Tailwind */
+        /* body { font-family: 'Plus Jakarta Sans', sans-serif; } */
+        [x-cloak] { display: none !important; }
     </style>
     
-    <!-- Additional Styles -->
     @stack('styles')
 </head>
-<body class="h-full">
-    <div x-data="{ sidebarOpen: false, sidebarCollapsed: false }" class="flex h-screen bg-gray-100">
-        
-        <!-- Sidebar Overlay (Mobile) -->
-        <div 
-            x-show="sidebarOpen" 
-            @click="sidebarOpen = false"
-            x-transition:enter="transition-opacity ease-linear duration-300"
-            x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100"
-            x-transition:leave="transition-opacity ease-linear duration-300"
-            x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0"
-            class="fixed inset-0 z-20 bg-black bg-opacity-50 lg:hidden"
-            x-cloak>
+<body 
+    x-data="{ sidebarOpen: false, sidebarCollapsed: window.innerWidth < 1024, isLoading: false }" 
+    @resize.window="sidebarCollapsed = window.innerWidth < 1024"
+    x-init="$watch('isLoading', value => { if (value) startLoaderTypingEffect() })"
+    @link-clicked.window="isLoading = true; setTimeout(() => { window.location.href = $event.detail.href }, 150)"
+    class="h-full bg-gray-100 antialiased font-sans"> {{-- ✅ PERBAIKAN: Menambahkan class font-sans --}}
+    
+    <!-- Halaman Overlay Loading -->
+    <div x-show="isLoading" x-cloak class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
+        <div class="w-96 h-96">
+            <dotlottie-wc src="https://lottie.host/efd6845b-3f14-492b-98a8-9336a08a5f98/RJUcUzKVqm.lottie" speed="1" autoplay loop></dotlottie-wc>
         </div>
+        <h2 class="text-2xl font-bold text-gray-800 tracking-wide -mt-12">
+            <span id="loader-typing-effect"></span>
+            <span id="loader-typing-cursor" class="inline-block w-0.5 h-7 bg-gray-800 animate-pulse ml-1" style="margin-bottom: -5px;"></span>
+        </h2>
+        <p class="mt-2 text-gray-600">Mohon tunggu, kami sedang mengambil data dari SAP.</p>
+    </div>
 
+    <div class="flex h-full">
         <!-- Sidebar -->
         <x-navigation.sidebar />
+        
+        <!-- Backdrop untuk layar kecil -->
+        <div x-show="sidebarOpen" @click="sidebarOpen = false" x-cloak class="fixed inset-0 bg-black/30 z-30 lg:hidden"></div>
 
-        <!-- Main Content Area -->
-        <div class="flex-1 flex flex-col overflow-hidden">
-            
-            <!-- Top Navigation -->
-            <x-navigation.topbar :user="auth()->user()" />
+        <!-- Main Content -->
+        <div class="flex flex-col flex-1 min-w-0">
+            <!-- Topbar -->
+            <x-navigation.topbar />
 
             <!-- Page Content -->
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 sm:p-6">
-                <div class="container mx-auto space-y-6">
+            <main class="flex-1 overflow-y-auto">
+                <div class="max-w-7xl mx-auto px-6 sm:px-8 py-8">
                     {{ $slot }}
                 </div>
             </main>
         </div>
     </div>
 
-    <div id="global-loading" class="fixed inset-0 z-50 flex-col items-center justify-center bg-black bg-opacity-50" style="display: none;">
-        <div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-32 w-32"></div>
-        <p class="mt-4 text-white text-lg font-semibold">Processing, please wait...</p>
-    </div>
-    <style>
-        .loader {
-            border-top-color: #3498db;
-            animation: spinner 1.5s linear infinite;
+    <script>
+        function startLoaderTypingEffect() {
+            const textToType = "mohon tunggu sebentar...";
+            const element = document.getElementById('loader-typing-effect');
+            const cursor = document.getElementById('loader-typing-cursor');
+            if (!element || !cursor) return;
+            let charIndex = 0; let isDeleting = false;
+            function typeLoop() {
+                cursor.style.display = 'inline-block';
+                const currentText = textToType.substring(0, charIndex);
+                element.textContent = currentText;
+                if (!isDeleting && charIndex < textToType.length) {
+                    charIndex++; setTimeout(typeLoop, 120);
+                } else if (isDeleting && charIndex > 0) {
+                    charIndex--; setTimeout(typeLoop, 80);
+                } else {
+                    isDeleting = !isDeleting; setTimeout(typeLoop, isDeleting ? 2000 : 500); 
+                }
+            }
+            typeLoop();
         }
-        @keyframes spinner {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+    </script>
 
-    <!-- Scripts -->
     @stack('scripts')
 </body>
 </html>

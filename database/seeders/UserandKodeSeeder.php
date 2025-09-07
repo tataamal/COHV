@@ -6,6 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\SapUser;
 use App\Models\Kode;
+use App\Models\MRP;
 // Model Mrp dihapus karena tidak digunakan
 use Illuminate\Support\Facades\DB;
 
@@ -57,6 +58,7 @@ class UserandKodeSeeder extends Seeder
                 $id_sap = trim($data['ID SAP']);
                 $nama_user = trim($data['NAMA']);
                 $kode_val = trim($data['Kode']);
+                $mrp_val = trim($data['MRP']);
                 
                 // Lanjutkan hanya jika data penting ada
                 if (!empty($id_sap) && !empty($nama_user) && !empty($kode_val)) {
@@ -68,12 +70,19 @@ class UserandKodeSeeder extends Seeder
                     );
 
                     // Langkah 2: Buat atau temukan Kode
-                    Kode::firstOrCreate(
+                    $kode = Kode::firstOrCreate(
                         ['kode' => $kode_val],
                         [
                             'sap_user_id' => $sapUser->id,
                             'nama_bagian' => $data['Nama Bagian'],
                             'kategori' => $data['Kategori']
+                        ]
+                    );
+
+                    MRP::create(
+                        [
+                            'mrp' => $mrp_val,
+                            'kode_id' => $kode->id
                         ]
                     );
                 }

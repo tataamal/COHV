@@ -21,73 +21,6 @@ class LoginController extends Controller
         return view('auth.login');
     }
 
-    public function getSapUserByKode(Request $request)
-    {
-        $request->validate(['kode_admin' => 'required|string']);
-        $kode = Kode::with('sapUser')->where('kode', $request->input('kode_admin'))->first();
-
-        if ($kode && $kode->sapUser) {
-            return response()->json(['sap_user_id' => $kode->sapUser->sap_id]);
-        }
-        return response()->json(['message' => 'Kode tidak ditemukan'], 404);
-    }
-
-    public function loginKorlap(Request $request)
-    {
-        $validated = $request->validate([
-            'kode_korlap' => 'required|string',
-            'nik' => 'required|numeric',
-            'sap_user_id' => 'required|string',
-            'sap_password' => 'required|string',
-        ]);
-
-        try {
-            $kode = Kode::with('sapUser')->where('kode', $validated['kode_korlap'])->first();
-
-            // Validasi internal sebelum menghubungi SAP
-            if (!$kode || $kode->nik != $validated['nik'] || !$kode->sapUser || $kode->sapUser->sap_id !== $validated['sap_user_id']) {
-                return back()->withErrors(['login' => 'Kombinasi Kode, NIK, dan SAP User ID tidak valid.']);
-            }
-
-            // --- INTEGRASI API FLASK DIMULAI ---
-            $response = Http::timeout(30)->post('http://127.0.0.1:8006/api/sap-login', [
-                'username' => $validated['sap_user_id'],
-                'password' => $validated['sap_password'],
-            ]);
-
-            // Jika otentikasi di SAP gagal
-            if (!$response->successful()) {
-                $errorMessage = $response->json('message', 'Username atau Password SAP tidak valid.');
-                return back()->withErrors(['login' => $errorMessage]);
-            }
-
-            session(['username' => $validated['sap_user_id']]);
-            session(['password' => $validated['sap_password']]);
-
-
-            // --- INTEGRASI API FLASK SELESAI ---
-
-            // Jika otentikasi SAP berhasil, lanjutkan membuat user di Laravel
-            $user = User::firstOrCreate(
-                ['email' => $validated['nik'] . '@kmi.local'], // Buat email unik
-                [
-                    'name' => $kode->sapUser->nama,
-                    'password' => Hash::make(Str::random(16)),
-                    'role' => 'korlap'
-                ]
-            );
-
-            Auth::login($user, true);
-            
-            // JIKA BERHASIL: Redirect ke dashboard korlap
-            return redirect()->route('korlap.dashboard');
-
-        } catch (ConnectionException $e) {
-            Log::error('Koneksi ke API SAP Gagal: ' . $e->getMessage());
-            return back()->withErrors(['login' => 'Tidak dapat terhubung ke layanan otentikasi. Hubungi administrator.']);
-        }
-    }
-
     public function loginAdmin(Request $request)
     {
         $validated = $request->validate([
@@ -137,7 +70,7 @@ class LoginController extends Controller
             Auth::login($user, true);
             
             // JIKA BERHASIL: Redirect ke dashboard admin
-            return redirect()->route('admin.dashboard');
+            return redirect()->route('dashboard-landing');
 
         } catch (ConnectionException $e) {
             Log::error('Koneksi ke API SAP Gagal: ' . $e->getMessage());
