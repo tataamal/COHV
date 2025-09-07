@@ -1,14 +1,15 @@
 <x-layouts.landing title="Welcome to KMI System">
 
-    {{-- [MODIFIKASI] Menambahkan sedikit CSS untuk status "selesai" pada catatan --}}
+    {{-- CSS untuk status tidak berubah, tapi kita akan gunakan class `completed` untuk status 'Selesai' --}}
     @push('styles')
     <style>
-        .note-item.completed {
+        .note-item.status-selesai {
             background-color: #f0fdf4; /* Tailwind's green-50 */
             border-left-color: #22c55e; /* green-500 */
         }
-        .note-item.completed .note-message,
-        .note-item.completed .note-meta {
+        .note-item.status-selesai .note-message,
+        .note-item.status-selesai .note-meta,
+        .note-item.status-selesai .note-sender {
             text-decoration: line-through;
             color: #6b7280; /* gray-500 */
         }
@@ -17,9 +18,12 @@
 
     @php
         $user = Auth::user() ?? (object)['name' => 'User', 'role' => 'Guest'];
+        // Pastikan variabel $allUsers terdefinisi, jika tidak, buat collection kosong
+        $allUsers = $allUsers ?? collect();
     @endphp
 
     <div class="flex flex-col min-h-screen p-6 md:p-8">
+        {{-- Header (Tidak ada perubahan) --}}
         <header class="w-full max-w-7xl mx-auto mb-8">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
@@ -59,6 +63,7 @@
             </div>
         </header>
         
+        {{-- Main Content (Tidak ada perubahan) --}}
         <main class="flex-1 flex flex-col items-center justify-center text-center">
             <h1 class="text-4xl sm:text-5xl font-bold text-gray-800 tracking-tight">Selamat Datang!</h1>
             <p class="mt-4 text-lg text-gray-600 max-w-2xl min-h-[28px]">
@@ -102,8 +107,10 @@
             </div>
         </main>
 
+        {{-- Footer (Area yang dimodifikasi) --}}
         <footer class="w-full max-w-7xl mx-auto mt-12">
             <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                {{-- Kalender (Tidak ada perubahan) --}}
                 <div class="lg:col-span-3 bg-white p-6 rounded-2xl shadow-lg">
                     <div id="calendar-container">
                         <div class="flex items-center justify-between mb-4">
@@ -117,19 +124,18 @@
                     </div>
                 </div>
 
+                {{-- Catatan Tim --}}
                 <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg flex flex-col">
-                    <h2 class="text-xl font-bold text-gray-800 mb-4">Catatan Tim</h2>
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Tugas & Catatan Tim</h2>
                     <form id="note-form" class="mb-4">
                         <div class="mb-3">
                             <label for="recipient-select" class="block text-sm font-medium text-gray-700 mb-1">Untuk:</label>
                              <select id="recipient-select" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" required>
-                                <option value="" disabled selected>Pilih penerima...</option>
-                                @if(isset($allUsers) && $allUsers->count() > 0)
-                                    @foreach($allUsers->where('id', '!=', Auth::id()) as $user)
-                                        <option value="{{ $user->id }}">{{ $user->nama }}</option> 
-                                    @endforeach
-                                @endif
-                            </select>
+                                 <option value="" disabled selected>Pilih penerima...</option>
+                                 @foreach($allUsers->where('id', '!=', Auth::id()) as $user)
+                                     <option value="{{ $user->id }}">{{ $user->nama }}</option> 
+                                 @endforeach
+                             </select>
                         </div>
                         
                         <div class="mb-3">
@@ -140,7 +146,6 @@
                         <button type="submit" class="w-full bg-purple-600 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-purple-700 transition">Simpan Catatan</button>
                     </form>
                     
-                    {{-- [PERBAIKAN UTAMA] Menghapus kelas 'h-48' agar 'flex-1' berfungsi --}}
                     <div id="notes-list" class="flex-1 overflow-y-auto space-y-3 pr-2 border-t pt-4">
                         {{-- Catatan akan dirender oleh JavaScript di sini --}}
                     </div>
@@ -152,7 +157,7 @@
     @push('scripts')
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // --- Fungsi Efek Mengetik Generik (Kode Anda yang sudah ada) ---
+        // --- Fungsi Efek Mengetik & Kalender (Tidak ada perubahan) ---
         function runTypingEffect(elementId, cursorId, text) {
             const element = document.getElementById(elementId);
             const cursor = document.getElementById(cursorId);
@@ -173,22 +178,11 @@
         }
         runTypingEffect('typing-effect', 'typing-cursor', "Bagian mana yang ingin anda kerjakan hari ini?");
         
-        document.body.addEventListener('alpine:initialized', () => {
-            Alpine.effect(() => {
-                const isLoading = Alpine.store('isLoading').on;
-                if (isLoading) {
-                    runTypingEffect('loader-typing-effect', 'loader-typing-cursor', "Sedang Memuat Data...");
-                }
-            });
-        });
-
-        // --- Kalender Interaktif (Kode Anda yang sudah ada) ---
         const monthYearEl = document.getElementById('calendar-month-year');
         const calendarGridEl = document.getElementById('calendar-grid');
         const prevMonthBtn = document.getElementById('prev-month');
         const nextMonthBtn = document.getElementById('next-month');
         let currentDate = new Date();
-
         function renderCalendar() {
             if (!calendarGridEl) return;
             calendarGridEl.innerHTML = '';
@@ -223,18 +217,18 @@
         if(nextMonthBtn) nextMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); });
         renderCalendar();
 
-        // --- [PENGGANTI] Fitur Catatan Tim dengan AJAX ---
+        // --- [MODIFIKASI] Fitur Catatan Tim dengan AJAX & Status ---
         const noteForm = document.getElementById('note-form');
         const noteInput = document.getElementById('note-input');
         const notesList = document.getElementById('notes-list');
         const recipientSelect = document.getElementById('recipient-select');
-        
-        // Function to get the CSRF token
+        const currentUserId = {{ Auth::id() ?? 'null' }};
+
         function getCsrfToken() {
             return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         }
 
-        // Function to render notes into the list
+        // Fungsi untuk merender catatan dengan status
         function renderNotes(notes) {
             if (!notesList) return;
             notesList.innerHTML = '';
@@ -245,26 +239,55 @@
 
             notes.forEach(note => {
                 const noteItem = document.createElement('div');
-                const isCompleted = note.completed ? 'completed' : '';
-                const buttonBg = note.completed ? 'bg-green-600' : 'bg-gray-200';
-                noteItem.className = `note-item relative bg-yellow-50 p-3 rounded-lg shadow-sm border-l-4 border-yellow-400 transition-all duration-300 ${isCompleted}`;
                 noteItem.dataset.id = note.id;
 
+                // Tentukan warna dan teks berdasarkan status
+                let statusClass, statusBg, statusText, borderColor;
+                switch(note.status) {
+                    case 'Dikerjakan':
+                        statusClass = 'status-dikerjakan';
+                        statusBg = 'bg-blue-500';
+                        statusText = 'Dikerjakan';
+                        borderColor = 'border-blue-400';
+                        break;
+                    case 'Selesai':
+                        statusClass = 'status-selesai';
+                        statusBg = 'bg-green-500';
+                        statusText = 'Selesai';
+                        borderColor = 'border-green-400'; // Didefinisikan di CSS
+                        break;
+                    default: // 'Baru'
+                        statusClass = 'status-baru';
+                        statusBg = 'bg-yellow-500';
+                        statusText = 'Baru';
+                        borderColor = 'border-yellow-400';
+                }
+                
+                noteItem.className = `note-item relative bg-gray-50 p-3 rounded-lg shadow-sm border-l-4 ${borderColor} transition-all duration-300 ${statusClass}`;
+                
                 const noteTime = new Date(note.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
+                // Hanya penerima yang bisa mengubah status
+                const canUpdateStatus = currentUserId === note.recipient_id;
+                const updateButtonHtml = canUpdateStatus ? 
+                    `<button class="update-status-btn text-xs font-semibold text-white ${statusBg} hover:opacity-80 py-1 px-3 rounded-full transition">
+                        Ubah Status
+                     </button>` : '';
+
                 noteItem.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <div class="pr-2">
+                    <div class="flex justify-between items-start gap-4">
+                        <div class="flex-1">
                             <p class="note-meta text-xs text-gray-500 mb-1">
                                 <strong>Untuk:</strong> ${note.recipient.nama}
                             </p>
                             <p class="note-message text-sm text-gray-800 break-words">${note.message}</p>
                         </div>
-                        <button class="complete-btn flex-shrink-0 w-8 h-8 rounded-full ${buttonBg} hover:bg-green-500 text-white flex items-center justify-center transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-                        </button>
+                        <div class="flex-shrink-0 text-center">
+                            <span class="status-badge inline-block text-xs font-bold text-white ${statusBg} px-2 py-1 rounded-full mb-2">${statusText}</span>
+                            ${updateButtonHtml}
+                        </div>
                     </div>
-                    <p class="text-right text-xs text-gray-400 mt-2">
+                    <p class="note-sender text-right text-xs text-gray-400 mt-2">
                         <em>${noteTime} - Dari: ${note.sender.nama}</em>
                     </p>
                 `;
@@ -272,27 +295,22 @@
             });
         }
 
-        // Function to fetch notes from the server
         async function fetchNotes() {   
             try {
-                // [UBAH INI] Gunakan route baru yang tidak perlu parameter
                 const response = await fetch(`{{ route('notes.index') }}`); 
-
                 if (!response.ok) throw new Error('Gagal mengambil data catatan');
                 const notes = await response.json();
                 renderNotes(notes);
             } catch (error) {
                 console.error('Error fetching notes:', error);
-                notesList.innerHTML = '<p class="text-center text-red-500 mt-8">Gagal memuat catatan.</p>';
+                if(notesList) notesList.innerHTML = '<p class="text-center text-red-500 mt-8">Gagal memuat catatan.</p>';
             }
         }
 
-        // Event listener for form submission
         if(noteForm) noteForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             const message = noteInput.value.trim();
             const recipientId = recipientSelect.value;
-
             if (!message || !recipientId) return;
 
             try {
@@ -311,27 +329,30 @@
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    console.error('Server error:', errorData);
-                    throw new Error('Gagal menyimpan catatan');
+                    throw new Error(errorData.message || 'Gagal menyimpan catatan');
                 }
                 
                 noteInput.value = '';
                 recipientSelect.selectedIndex = 0;
-                fetchNotes(); // Fetch the latest data
+                fetchNotes();
             } catch (error) {
                 console.error('Error saving note:', error);
-                alert('Gagal menyimpan catatan. Periksa console untuk detail.');
+                alert('Gagal menyimpan catatan: ' + error.message);
             }
         });
 
-        // Event listener for the "complete" button (event delegation)
         if(notesList) notesList.addEventListener('click', async function(e) {
-            const completeButton = e.target.closest('.complete-btn');
-            if (completeButton) {
-                const noteItem = completeButton.closest('.note-item');
+            const updateButton = e.target.closest('.update-status-btn');
+            if (updateButton) {
+                const noteItem = updateButton.closest('.note-item');
                 const noteId = noteItem.dataset.id;
+                
+                // Tambahkan efek visual saat loading
+                updateButton.textContent = '...';
+                updateButton.disabled = true;
 
                 try {
+                    // [PERBAIKAN] Membangun URL secara manual di JavaScript
                     const response = await fetch(`/notes/${noteId}/status`, {
                         method: 'PATCH',
                         headers: {
@@ -340,16 +361,22 @@
                         },
                     });
                     if (!response.ok) throw new Error('Gagal update status');
-                    fetchNotes(); // Fetch the latest data
+                    
+                    fetchNotes(); // Cara paling mudah untuk refresh list
+
                 } catch (error) {
                     console.error('Error updating status:', error);
+                    // Kembalikan teks tombol jika error
+                    updateButton.textContent = 'Ubah Status';
+                    updateButton.disabled = false;
                 }
             }
         });
 
-        // Call fetchNotes() when the page first loads
         fetchNotes();
     });
     </script>
     @endpush
 </x-layouts.landing>
+
+ 

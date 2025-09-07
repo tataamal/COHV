@@ -2,41 +2,38 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Note extends Model
 {
     use HasFactory;
 
     /**
-     * Nama tabel yang terhubung dengan model.
-     * Sesuaikan jika nama tabel Anda berbeda.
-     */
-    protected $table = 'notes';
-
-    /**
-     * Atribut yang dapat diisi secara massal.
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
      */
     protected $fillable = [
         'sender_id',
         'recipient_id',
         'message',
-        'completed',
+        'status', // [MODIFIKASI] Menambahkan 'status'
     ];
 
     /**
-     * Relasi untuk mendapatkan data pengirim (sender).
+     * Relasi ke pengirim catatan (user).
      */
-    public function sender()
+    public function sender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'sender_id');
     }
 
     /**
-     * Relasi untuk mendapatkan data penerima (recipient).
+     * Relasi ke penerima catatan (user).
      */
-    public function recipient()
+    public function recipient(): BelongsTo
     {
         return $this->belongsTo(User::class, 'recipient_id');
     }

@@ -14,6 +14,8 @@ use App\Models\ProductionTData1;
 use App\Models\ProductionTData2;
 use App\Models\ProductionTData3;
 use App\Models\ProductionTData4;
+use App\Models\MRP;
+use App\Models\Gr;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 
@@ -303,5 +305,56 @@ class ManufactController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function list_gr($kode)
+    {
+        // ... (Logika untuk mencari $kodeModel dan $mrpList tetap sama) ...
+        $kodeModel = Kode::where('kode', $kode)->first();
+        if (!$kodeModel) {
+            return view('Admin.list-gr', [
+                'kode' => $kode,
+                'dataGr' => collect(),
+                'processedData' => collect(),
+                'error' => 'Kode "' . $kode . '" tidak ditemukan.'
+            ]);
+        }
+        $mrpList = Mrp::where('kode_id', $kodeModel->id)->pluck('mrp');
+        if ($mrpList->isEmpty()) {
+            return view('Admin.list-gr', [
+                'kode' => $kode,
+                'dataGr' => collect(),
+                'processedData' => collect(),
+                'error' => 'Tidak ada MRP yang terhubung dengan kode ' . $kode
+            ]);
+        }
+
+        // [PERBAIKAN 1] Ambil data mentah untuk tabel utama
+        $dataGr = Gr::whereIn('DISPO', $mrpList)
+            ->select(
+                'AUFNR', 'MAKTX', 'KDAUF', 'KDPOS', 'PSMNG',
+                'MENGE', 'MEINS', 'BUDAT_MKPF', 'DISPO'
+            )
+            ->orderBy('BUDAT_MKPF', 'desc')
+            ->get();
+
+        // Logika untuk mengolah data kalender (tetap sama)
+        $groupedByDate = $dataGr->groupBy('BUDAT_MKPF');
+        $processedData = $groupedByDate->mapWithKeys(function ($dailyRecords, $date) {
+            return [
+                $date => [
+                    'total_gr' => $dailyRecords->count(),
+                    'mrp_breakdown' => $dailyRecords->groupBy('DISPO')->map->count(),
+                    'records' => $dailyRecords
+                ]
+            ];
+        });
+        
+        // [PERBAIKAN 2] Kirim KEDUA variabel ke view
+        return view('Admin.list-gr', [
+            'kode'           => $kode,
+            'dataGr'         => $dataGr, // <-- Untuk tabel utama
+            'processedData'  => $processedData // <-- Untuk kalender & modal
+        ]);
     }
 }

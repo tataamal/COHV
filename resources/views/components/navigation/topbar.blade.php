@@ -3,6 +3,7 @@
         // [DIPERBARUI] Mengembalikan navigasi ke halaman List Data
         ['name' => 'Dashboard', 'route_name' => 'dashboard.show'],
         ['name' => 'List Data', 'route_name' => 'show.detail.data2'],
+        ['name' => 'List GR', 'route_name' => 'list.gr'],
     ],
 ])
 
@@ -36,7 +37,7 @@
         </button>
         
         <!-- Tombol Collapse Sidebar (Hanya di Desktop) -->
-        <button @click="sidebarCollapsed = !sidebarCollapsed" class="hidden lg:flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 text-gray-600 focus:outline-none transition-transform duration-300 mr-4" :class="{'rotate-180': !sidebarCollapsed}">
+        <button @click="sidebarCollapsed = !sidebarCollapsed; window.dispatchEvent(new CustomEvent('sidebar-toggled'))" class="hidden lg:flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 text-gray-600 focus:outline-none transition-transform duration-300 mr-4" :class="{'rotate-180': !sidebarCollapsed}">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
         </button>
 
@@ -61,8 +62,6 @@
             <p class="text-sm font-semibold text-gray-800">{{ $user->name ?? 'Guest User' }}</p>
             <p class="text-xs text-gray-500 capitalize">{{ $user->role ?? 'Guest' }}</p>
         </div>
-        <img class="h-9 w-9 rounded-full object-cover ring-2 ring-offset-2 ring-purple-500" 
-             src="https://ui-avatars.com/api/?name={{ urlencode($user->name ?? 'G') }}&background=8b5cf6&color=fff" 
-             alt="{{ $user->name ?? 'User' }} Avatar">
+        <i class="fa-solid fa-user"></i>
     </div>
 </header>

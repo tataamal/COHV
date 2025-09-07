@@ -6,12 +6,12 @@
                 <div>
                     <h1 class="text-xl font-semibold text-gray-900">Kode Plant: {{ $plant }}</h1>
                     <p class="mt-1 text-sm text-gray-500">
-                        <span class="font-medium text-gray-600">Bagian:</span> {{ $bagian }} | 
+                        <span class="font-medium text-gray-600">Nama Bagian:</span> {{ $bagian }} |
                         <span class="font-medium text-gray-600">Kategori:</span> {{ $categories }}
                     </p>
                 </div>
                 <div class="flex items-center space-x-2 flex-shrink-0">
-                    <a href="{{ route('detail.data2', $plant) }}" 
+                    <a href="{{ route('detail.data2', $plant) }}"
                        @click.prevent="isLoading = true; setTimeout(() => { window.location.href = $el.href }, 150)"
                        class="inline-flex items-center px-4 py-2 bg-purple-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700 transition">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M4 20h5v-5M20 4h-5v5"></path></svg>
@@ -20,22 +20,20 @@
                     <a href="#" onclick="hideAllDetails(); return false;" class="inline-flex items-center px-4 py-2 bg-amber-500 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-amber-600 transition">
                         Hide All
                     </a>
-                    <a href="{{ route('dashboard.show', $plant) }}" 
-                        @click.prevent="isLoading = true; setTimeout(() => { window.location.href = $el.href }, 150)"
-                        class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-50 transition">
+                    <a href="{{ route('dashboard.show', $plant) }}"
+                       @click.prevent="isLoading = true; setTimeout(() => { window.location.href = $el.href }, 150)"
+                       class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-50 transition">
                             &larr; Back To Dashboard
                     </a>
                 </div>
             </div>
         </div>
-
-        {{-- Konten Utama dengan Tata Letak Sejajar --}}
-        <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl border border-gray-200">
+        <div class="bg-white shadow-sm sm:rounded-xl border border-gray-200 w-full min-w-0">
             <div class="p-6 text-gray-900">
                 {{-- Container untuk Tabel Utama dan Paginasi --}}
                 <div id="outstanding-order-container">
                     <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
-                        <h3 class="text-lg font-semibold text-gray-800">Sales Order (T_DATA)</h3>
+                        <h3 class="text-lg font-semibold text-gray-800">SALES ORDER TABLE</h3>
                         <form method="GET" class="flex items-center w-full sm:w-auto sm:max-w-xs">
                             <div class="relative flex-grow">
                                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent" id="searchInput">
@@ -50,7 +48,7 @@
                             <thead class="bg-purple-50 text-purple-800 font-semibold uppercase text-xs">
                                 <tr>
                                     <th class="px-4 py-3 text-center w-16">No.</th>
-                                    <th class="px-4 py-3">Name</th>
+                                    <th class="px-4 py-3">Buyer Name</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
@@ -96,23 +94,24 @@
                         <button class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 transition" onclick="clearAllSelections()">Clear All</button>
                     </div>
                     
+                    {{-- Struktur ini sudah benar, tidak perlu diubah --}}
                     <div class="overflow-x-auto border rounded-lg">
                         <table id="tdata3-table" class="min-w-full table-auto text-sm text-left whitespace-nowrap">
                             <thead class="bg-purple-50 text-purple-800 font-semibold uppercase text-xs">
                                 <tr>
-                                    <th class="px-4 py-3"><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></th>
-                                    <th class="px-4 py-3">No.</th> 
-                                    <th class="px-4 py-3">PRO</th>
-                                    <th class="px-4 py-3">Status</th>
-                                    <th class="px-4 py-3">Action</th>
-                                    <th class="px-4 py-3">MRP</th>
-                                    <th class="px-4 py-3">Material</th>
-                                    <th class="px-4 py-3">Description</th>
-                                    <th class="px-4 py-3 text-right">Qty Order</th>
-                                    <th class="px-4 py-3 text-right">Qty GR</th>
-                                    <th class="px-4 py-3 text-right">Outs GR</th>
-                                    <th class="px-4 py-3">Start Date</th>
-                                    <th class="px-4 py-3">Finish Date</th>
+                                    <th class="px-4 py-3 text-center"><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></th>
+                                    <th class="px-4 py-3 text-center">No.</th>
+                                    <th class="px-4 py-3 text-center">PRO</th>
+                                    <th class="px-4 py-3 text-center">Status</th>
+                                    <th class="px-4 py-3 text-center">Action</th>
+                                    <th class="px-4 py-3 text-center">MRP</th>
+                                    <th class="px-4 py-3 text-center">Material</th>
+                                    <th class="px-4 py-3 text-center">Description</th>
+                                    <th class="px-4 py-3 text-center">Qty Order</th>
+                                    <th class="px-4 py-3 text-center">Qty GR</th>
+                                    <th class="px-4 py-3 text-center">Outs GR</th>
+                                    <th class="px-4 py-3 text-center">Start Date</th>
+                                    <th class="px-4 py-3 text-center">Finish Date</th>
                                 </tr>
                             </thead>
                             <tbody id="tdata3-body" class="divide-y divide-gray-200"></tbody>
@@ -128,52 +127,49 @@
     </div>
     @include('Admin.add-component-modal')
     {{-- ========= RESULT MODAL (Tailwind) ========= --}}
-<div id="resultModal" class="fixed inset-0 hidden z-50">
-
-    <div id="resultOverlay" class="absolute inset-0 bg-black/40 opacity-0 transition-opacity"></div>
-
-    <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div id="resultPanel"
-            class="w-full max-w-xl origin-center transform rounded-2xl bg-white shadow-2xl opacity-0 scale-95 transition-all">
-        <div class="flex items-center justify-between border-b px-6 py-4">
-            <h3 class="text-lg font-semibold">Production Order</h3>
-            <button id="resultClose" class="rounded-lg p-2 text-gray-500 hover:bg-gray-100">✕</button>
-        </div>
-
-        <div id="singleView" class="px-6 py-5 space-y-4">
-            <div>
-            <div class="text-sm text-gray-500">Plant</div>
-            <div id="plantValue" class="mt-1 text-base font-medium text-gray-900">-</div>
+    <div id="resultModal" class="fixed inset-0 hidden z-50">
+        <div id="resultOverlay" class="absolute inset-0 bg-black/40 opacity-0 transition-opacity"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div id="resultPanel"
+                class="w-full max-w-xl origin-center transform rounded-2xl bg-white shadow-2xl opacity-0 scale-95 transition-all">
+            <div class="flex items-center justify-between border-b px-6 py-4">
+                <h3 class="text-lg font-semibold">Production Order</h3>
+                <button id="resultClose" class="rounded-lg p-2 text-gray-500 hover:bg-gray-100">✕</button>
             </div>
-            <div>
-            <div class="text-sm text-gray-500">Production Order</div>
-            <div id="poList" class="mt-1 flex flex-wrap gap-2">
+
+            <div id="singleView" class="px-6 py-5 space-y-4">
+                <div>
+                <div class="text-sm text-gray-500">Plant</div>
+                <div id="plantValue" class="mt-1 text-base font-medium text-gray-900">-</div>
+                </div>
+                <div>
+                <div class="text-sm text-gray-500">Production Order</div>
+                <div id="poList" class="mt-1 flex flex-wrap gap-2">
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div id="batchView" class="hidden px-6 py-5">
-            <div class="text-sm text-gray-500 mb-2">Converted Orders</div>
-            <div class="overflow-auto rounded-xl border max-h-80">
-            <table class="min-w-full text-sm">
-                <thead class="bg-gray-50 text-left text-gray-600">
-                <tr>
-                    <th class="px-4 py-2">#</th>
-                    <th class="px-4 py-2">Planned Order</th>
-                    <th class="px-4 py-2">Plant</th>
-                    <th class="px-4 py-2">Production Order</th>
-                </tr>
-                </thead>
-                <tbody id="batchTbody" class="divide-y"></tbody>
-            </table>
+            <div id="batchView" class="hidden px-6 py-5">
+                <div class="text-sm text-gray-500 mb-2">Converted Orders</div>
+                <div class="overflow-auto rounded-xl border max-h-80">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-gray-50 text-left text-gray-600">
+                    <tr>
+                        <th class="px-4 py-2">#</th>
+                        <th class="px-4 py-2">Planned Order</th>
+                        <th class="px-4 py-2">Plant</th>
+                        <th class="px-4 py-2">Production Order</th>
+                    </tr>
+                    </thead>
+                    <tbody id="batchTbody" class="divide-y"></tbody>
+                </table>
+                </div>
+            </div>
+            <div class="border-t px-6 py-4 flex justify-end">
+                <button id="resultOk" class="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">OK</button>
+            </div>
             </div>
         </div>
-
-        <div class="border-t px-6 py-4 flex justify-end">
-            <button id="resultOk" class="rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">OK</button>
-        </div>
-        </div>
-    </div>
     </div>
 
     <div id="scheduleModal" class="fixed inset-0 z-50 hidden">
@@ -381,24 +377,23 @@
         function padAufnr(v){ const s=String(v||''); return s.length>=12 ? s : s.padStart(12,'0'); }
         const RELEASE_ORDER_URL = @json(route('release.order.direct', ['aufnr' => '__AUFNR__']));
 
-        // Mengambil data dari controller dan menyimpannya di JavaScript
         const allTData2 = @json($allTData2, JSON_HEX_TAG);
         const allTData3 = @json($allTData3, JSON_HEX_TAG);
         const allTData1 = @json($allTData1, JSON_HEX_TAG);
         const allTData4ByAufnr = @json($allTData4ByAufnr, JSON_HEX_TAG);
         const tdata1ByAufnr = (() => {
-          const by = {};
-          if (allTData1 && typeof allTData1 === 'object') {
-            Object.values(allTData1).forEach(arr => {
-              (arr || []).forEach(t1 => {
-                const a = (t1?.AUFNR || '').toString();
-                if (!a) return;
-                if (!by[a]) by[a] = [];
-                by[a].push(t1);
-              });
-            });
-          }
-          return by;
+            const by = {};
+            if (allTData1 && typeof allTData1 === 'object') {
+                Object.values(allTData1).forEach(arr => {
+                    (arr || []).forEach(t1 => {
+                        const a = (t1?.AUFNR || '').toString();
+                        if (!a) return;
+                        if (!by[a]) by[a] = [];
+                        by[a].push(t1);
+                    });
+                });
+            }
+            return by;
         })();
         const allTData4ByPlnum = @json($allTData4ByPlnum, JSON_HEX_TAG);
 
@@ -419,14 +414,16 @@
             hideAllDetails();
             t3Container.classList.add('hidden');
 
-            // Mengukur tabel T_DATA dan menerapkan lebarnya ke tabel T_DATA3
+            // ✅ PERBAIKAN 2: BLOK JAVASCRIPT UNTUK MENGATUR MIN-WIDTH DIHAPUS TOTAL
+            /*
             const referenceTable = document.querySelector('#outstanding-order-container table');
             const targetTable = document.getElementById('tdata3-table');
 
             if (referenceTable && targetTable) {
-                const referenceWidth = referenceTable.scrollWidth; // Dapatkan lebar penuh dari tabel pertama
-                targetTable.style.minWidth = `${referenceWidth}px`; // Terapkan sebagai min-width
+                const referenceWidth = referenceTable.scrollWidth;
+                targetTable.style.minWidth = `${referenceWidth}px`;
             }
+            */
 
             currentSelectedRow = tr;
 
@@ -733,7 +730,7 @@
                     ${canSelect ? `<input type="checkbox" class="bulk-select" data-type="${canSelectForPLO ? 'PLO' : 'PRO'}" data-id="${canSelectForPLO ? d3.PLNUM : d3.AUFNR}" data-auart="${d3.AUART || ''}" onchange="handleBulkSelect(this)">` : ''}
                 </td>
                 <td class="px-2 py-1 border text-center">${index}</td>
-                <td class="px-2 py-1 border">
+                <td class="px-2 py-1 border text-center">
                     ${d3.AUFNR || '-'}
                     ${d3.AUFNR ? `
                         <button class="bg-indigo-600 text-white px-2 py-1 rounded text-xs hover:bg-indigo-700" onclick="showTData1ByAufnr('${d3.AUFNR}')">Route</button>
@@ -743,7 +740,7 @@
                 <td class="px-2 py-1 border text-center">
                     <span class="px-2 py-1 rounded-full text-xs font-medium ${statusClass}">${statusDisplay}</span>
                 </td>
-                <td class="px-2 py-1 border">
+                <td class="px-2 py-1 border text-center">
                 <div class="flex items-center gap-2">
                     ${d3.AUFNR ? `
                     <button type="button" title="Reschedule"
@@ -771,14 +768,14 @@
 
                 </div>
                 </td>
-                <td class="px-2 py-1 border">${d3.DISPO || '-'}</td>
-                <td class="px-2 py-1 border">${d3.MATNR ? ltrim(d3.MATNR, '0') : '-'}</td>
-                <td class="px-2 py-1 border">${escapeJsonString(d3.MAKTX) || '-'}</td>
-                <td class="px-2 py-1 border text-right">${d3.PSMNG || '-'}</td>
-                <td class="px-2 py-1 border text-right">${d3.WEMNG || '-'}</td>
-                <td class="px-2 py-1 border text-right">${d3.MENG2 || '-'}</td>
-                <td class="px-2 py-1 border">${formatDate(d3.SSAVD)}</td>
-                <td class="px-2 py-1 border">${formatDate(d3.SSSLD)}</td>
+                <td class="px-2 py-1 border text-center">${d3.DISPO || '-'}</td>
+                <td class="px-2 py-1 border text-center">${d3.MATNR ? ltrim(d3.MATNR, '0') : '-'}</td>
+                <td class="px-2 py-1 border text-center">${escapeJsonString(d3.MAKTX) || '-'}</td>
+                <td class="px-2 py-1 border text-center">${d3.PSMNG || '-'}</td>
+                <td class="px-2 py-1 border text-center">${d3.WEMNG || '-'}</td>
+                <td class="px-2 py-1 border text-center">${d3.MENG2 || '-'}</td>
+                <td class="px-2 py-1 border text-center">${formatDate(d3.SSAVD)}</td>
+                <td class="px-2 py-1 border text-center">${formatDate(d3.SSSLD)}</td>
             `;
 
             row.dataset.rowData = JSON.stringify(d3);
@@ -899,12 +896,12 @@
                     <td class="px-4 py-3 text-center">${i + 1}</td>
                     <td class="px-4 py-3 text-center">${t1.VORNR || '-'}</td>
                     <td class="px-4 py-3 text-center">${t1.STEUS || '-'}</td>
-                    <td class="px-4 py-3">${t1.KTEXT || '-'}</td>
+                    <td class="px-4 py-3 text-center">${t1.KTEXT || '-'}</td>
                     <td class="px-4 py-3 text-center">${t1.ARBPL || '-'}</td>
                     <td class="px-4 py-3 text-center">${t1.PV1 || '-'}</td>
                     <td class="px-4 py-3 text-center">${t1.PV2 || '-'}</td>
                     <td class="px-4 py-3 text-center">${t1.PV3 || '-'}</td>
-                    <td class="px-4 py-3">
+                    <td class="px-4 py-3 text-center">
                         <div class="flex gap-2 justify-center">
                             <button class="px-2 py-1 text-xs font-semibold text-indigo-700 bg-indigo-100 rounded-md hover:bg-indigo-200" onclick="openChangeWcModal('${t1.AUFNR}', '${t1.VORNR}', '${t1.ARBPL || ''}')">Edit WC</button>
                             <button class="px-2 py-1 text-xs font-semibold text-amber-700 bg-amber-100 rounded-md hover:bg-amber-200" onclick="openChangePvModal('${t1.AUFNR}', '${t1.VERID || ''}', '${t1.WERKS || ''}')">Change PV</button>
@@ -963,8 +960,8 @@
                 <tr class="bg-white">
                     <td class="px-4 py-3 text-center"><input type="checkbox" class="component-select-${aufnr} rounded border-gray-300 text-purple-600 shadow-sm focus:ring-purple-500" data-aufnr="${aufnr}" data-rspos="${c.RSPOS || i}" data-material="${ltrim0(c.MATNR)}" onchange="handleComponentSelect('${aufnr}')"></td>
                     <td class="px-4 py-3 text-center">${i + 1}</td>
-                    <td class="px-4 py-3">${ltrim0(c.MATNR)}</td>
-                    <td class="px-4 py-3">${sanitize(c.MAKTX)}</td>
+                    <td class="px-4 py-3 text-center">${ltrim0(c.MATNR)}</td>
+                    <td class="px-4 py-3 text-center">${sanitize(c.MAKTX)}</td>
                     <td class="px-4 py-3 text-center">${c.BDMNG ?? c.MENGE ?? '-'}</td>
                     <td class="px-4 py-3 text-center">${c.ENMNG ?? '-'}</td>
                     <td class="px-4 py-3 text-center">${sanitize(c.MEINS || '-')}</td>
@@ -1187,24 +1184,40 @@
                 return;
             }
 
+            // ✅ PERBAIKAN: Menambahkan header flexbox dengan input pencarian
             let html = `
-                <h4 class="text-lg font-semibold text-gray-800 mb-4">Outstanding Order</h4>
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+                    <h4 class="text-lg font-semibold text-gray-800">Outstanding Order</h4>
+                    <div class="relative w-full sm:w-auto sm:max-w-xs">
+                        <input 
+                            type="text" 
+                            id="tdata2-search" 
+                            oninput="filterTData2Table()" 
+                            placeholder="Cari di tabel ini..." 
+                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        >
+                        <div class="absolute top-0 left-0 inline-flex items-center p-2.5 text-gray-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                    </div>
+                </div>
                 <div class="overflow-x-auto border rounded-lg">
                     <table class="min-w-full table-auto text-sm text-left whitespace-nowrap">
                     <thead class="bg-purple-50 text-purple-800 font-semibold uppercase text-xs">
                         <tr>
-                        <th class="px-4 py-3">No.</th>
-                        <th class="px-4 py-3">Order</th>
-                        <th class="px-4 py-3">Item</th>
-                        <th class="px-4 py-3">Material FG</th>
-                        <th class="px-4 py-3">Description Material</th>
-                        <th class="px-4 py-3">PO Date</th>
+                        <th class="px-4 py-3 text-center">No.</th>
+                        <th class="px-4 py-3 text-center">Order</th>
+                        <th class="px-4 py-3 text-center">Item</th>
+                        <th class="px-4 py-3 text-center">Material FG</th>
+                        <th class="px-4 py-3 text-center">Description Material</th>
+                        <th class="px-4 py-3 text-center">PO Date</th>
                         <th class="px-4 py-3 text-center">Total PLO</th>
                         <th class="px-4 py-3 text-center">PRO (CRTD)</th>
                         <th class="px-4 py-3 text-center">PRO (Released)</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200 bg-white">`;
+                    {{-- ✅ PERBAIKAN: Menambahkan ID unik ke tbody untuk filtering --}}
+                    <tbody id="tdata2-tbody" class="divide-y divide-gray-200 bg-white">`;
 
             rows.forEach((r, i) => {
                 const soKey = `${r.KDAUF || ''}-${r.KDPOS || ''}`;
@@ -1230,12 +1243,52 @@
                         <td class="px-4 py-3 text-center">${proRel}</td>
                     </tr>`;
             });
-            html += `</tbody></table></div><p class="mt-3 text-xs text-gray-500">Klik salah satu baris untuk melihat Order Overview (T_DATA3).</p>`;
+            html += `</tbody></table></div><p class="mt-3 text-xs text-gray-500">Klik salah satu baris untuk melihat ORDER OVERVIEW TABLE.</p>`;
             box.innerHTML = html;
             box.classList.remove('hidden');
             box.querySelectorAll('.t2-row').forEach(tr => {
                 tr.addEventListener('click', () => handleClickTData2Row(tr.dataset.key, tr));
             });
+        }
+
+        /**
+         * Fungsi baru untuk memfilter baris tabel T_DATA2 berdasarkan input pencarian.
+         */
+        function filterTData2Table() {
+            const input = document.getElementById('tdata2-search');
+            const filterText = input.value.toLowerCase();
+            const tableBody = document.getElementById('tdata2-tbody');
+            
+            // ✅ PERBAIKAN: Hanya menargetkan baris data aktual untuk difilter
+            const dataRows = Array.from(tableBody.querySelectorAll('tr.t2-row'));
+            let visibleRows = 0;
+
+            // Hapus pesan "tidak ada hasil" dari pencarian sebelumnya
+            const existingNoResultsRow = tableBody.querySelector('.no-results-row');
+            if (existingNoResultsRow) {
+                existingNoResultsRow.remove();
+            }
+
+            // Loop melalui setiap baris data
+            dataRows.forEach(row => {
+                const rowText = row.textContent || row.innerText;
+                if (rowText.toLowerCase().includes(filterText)) {
+                    row.style.display = ""; // Tampilkan baris jika cocok
+                    visibleRows++;
+                } else {
+                    row.style.display = "none"; // Sembunyikan baris jika tidak cocok
+                }
+            });
+
+            // Jika tidak ada baris yang cocok, tambahkan pesan ke dalam tabel
+            if (visibleRows === 0 && dataRows.length > 0) {
+                const noResultsRow = tableBody.insertRow(); // Membuat <tr> baru
+                noResultsRow.classList.add('no-results-row');
+                const cell = noResultsRow.insertCell(); // Membuat <td> baru
+                cell.colSpan = 9; // Menggabungkan semua 9 kolom
+                cell.textContent = 'Mohon maaf data yang Anda cari tidak ada';
+                cell.className = 'px-4 py-12 text-center text-gray-500';
+            }
         }
         
         function handleClickTData2Row(key, tr) {
@@ -1886,6 +1939,40 @@
                 }
             });
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            @if ($errors->has('msg'))
+                // Tampilkan error utama
+                window.resultSwal({
+                    success: false,
+                    title: 'Gagal Menjadwalkan',
+                    html: `{!! nl2br(e($errors->first('msg'))) !!}`
+                });
+            @elseif ($errors->any())
+                // Fallback kalau ada error lainnya
+                window.resultSwal({
+                    success: false,
+                    title: 'Gagal',
+                    html: `{!! nl2br(e(implode("\n", $errors->all()))) !!}`
+                });
+            @endif
+
+            @if (session('success'))
+                window.resultSwal({
+                    success: true,
+                    title: 'Berhasil',
+                    text: @json(session('success'))
+                });
+            @endif
+
+            @if (session('sap_raw'))
+                // Opsional: log detail response SAP di console untuk debugging
+                console.log('SAP RAW:', @json(session('sap_raw')));
+                // Atau tampilkan ringkasannya:
+                // const ret = (@json(session('sap_raw')) || {}).sap_return || [];
+                // window.toast('info', 'SAP Return', `${ret.length} baris`);
+            @endif
+        });
     
     </script>
     @endpush

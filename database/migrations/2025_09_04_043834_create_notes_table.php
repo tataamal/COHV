@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('notes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sender_id')->constrained('sap_users'); // Asumsi tabel user Anda 'sap_users'
-            $table->foreignId('recipient_id')->constrained('sap_users');
+            $table->foreignId('sender_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('recipient_id')->constrained('users')->onDelete('cascade');
             $table->text('message');
-            $table->boolean('completed')->default(false);
+            // [MODIFIKASI] Mengganti boolean 'completed' dengan string 'status'
+            $table->string('status')->default('Baru'); // Pilihan: Baru, Dikerjakan, Selesai
             $table->timestamps();
         });
     }

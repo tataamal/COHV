@@ -2,21 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Note;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Note;
+use Illuminate\Support\Facades\Log;
+
 class NoteController extends Controller
 {
     /**
-     * Mengambil semua catatan yang ditujukan untuk user yang sedang login.
+     * Menampilkan semua catatan yang relevan untuk user yang sedang login.
+     * (Catatan yang dikirim olehnya atau ditujukan kepadanya)
      */
     public function index()
     {
         $userId = Auth::id();
-        $notes = Note::where('recipient_id', $userId)
-                     ->with('sender_id,nama') // Mengambil ID dan nama pengirim
-                     ->orderBy('created_at', 'desc')
-                     ->get();
+        $notes = Note::where('sender_id', $userId)
+            ->orWhere('recipient_id', $userId)
+            ->with(['sender', 'recipient']) // Eager load untuk efisiensi
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return response()->json($notes);
     }
@@ -27,40 +31,54 @@ class NoteController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'recipient_id' => 'required|exists:sap_users,id',
-            'message' => 'required|string|max:255',
+            'recipient_id' => 'required|exists:users,id',
+            'message' => 'required|string|max:1000',
         ]);
 
         $note = Note::create([
             'sender_id' => Auth::id(),
             'recipient_id' => $request->recipient_id,
             'message' => $request->message,
-            'completed' => 0, // Default status
+            'status' => 'Baru', // Status default saat dibuat
         ]);
+        
+        // Memuat relasi agar bisa dikirim kembali ke frontend
+        $note->load(['sender', 'recipient']);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Catatan berhasil disimpan.',
-            'data' => $note
-        ], 201); // 201 Created
+        return response()->json($note, 201);
     }
 
     /**
-     * Menandai catatan sebagai selesai.
+     * [MODIFIKASI] Mengubah fungsi update status menjadi lebih fleksibel.
+     * Fungsi ini akan mengubah status ke tahap berikutnya.
      */
-    public function markAsComplete(Note $note)
+    public function updateStatus(Note $note)
     {
-        // Otorisasi: Hanya penerima yang boleh menyelesaikan catatan
-        if ($note->recipient_id !== Auth::id()) {
-            return response()->json(['success' => false, 'message' => 'Tidak diizinkan.'], 403); // 403 Forbidden
+        // Hanya penerima atau pengirim yang bisa mengubah status
+        if (Auth::id() != $note->recipient_id && Auth::id() != $note->sender_id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $note->completed = 1;
-        $note->save();
+        // Logika untuk mengubah status secara berurutan
+        switch ($note->status) {
+            case 'Baru':
+                $note->status = 'Dikerjakan';
+                break;
+            case 'Dikerjakan':
+                $note->status = 'Selesai';
+                break;
+            case 'Selesai':
+                // Opsional: bisa dikembalikan ke 'Baru' atau tetap 'Selesai'
+                $note->status = 'Baru'; 
+                break;
+            default:
+                $note->status = 'Baru';
+                break;
+        }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Catatan ditandai selesai.'
-        ]);
+        $note->save();
+        $note->load(['sender', 'recipient']);
+
+        return response()->json($note);
     }
 }

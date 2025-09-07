@@ -498,7 +498,7 @@ if __name__ == "__main__":
         'mode',
         choices=['otomatis', 'manual', 'both'],
         nargs='?',
-        default='otomatis',
+        default='both',
         help=(
             "Pilih mode eksekusi:\n"
             "'manual'   - Menjalankan sinkronisasi sekali saja lalu keluar.\n"

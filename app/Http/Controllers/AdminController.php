@@ -136,6 +136,7 @@ class AdminController extends Controller
         $outstandingReservasi = ProductionTData4::where('WERKSX', $kode)
                                     ->whereColumn('KALAB', '<', 'BDMNG')
                                     ->count();
+        $nama_bagian = Kode::where('kode', $kode)->value('nama_bagian');
 
         return view('Admin.dashboard', compact(
             'TData1', 
@@ -148,6 +149,7 @@ class AdminController extends Controller
             'doughnutChartLabels',
             'doughnutChartDatasets',
             'kode',
+            'nama_bagian'
         ));
     }
 
@@ -173,11 +175,13 @@ class AdminController extends Controller
             if ($sapUser) {
                 $plants = $sapUser->kode()->get();
             }
-            $allUsers = SapUser::where('id', '!=', Auth::id())->get();
-            // dd($allUsers);
+            $allUsers = SapUser::orderBy('nama')->get();
         }
         
         // Kirim data 'plants' ke view 'dashboard-landing'
-        return view('dashboard', compact('plants','allUsers'));
+        return view('dashboard', [
+            'plants' => $plants, // asumsikan ini sudah ada
+            'allUsers' => $allUsers
+        ]);
     }
 }

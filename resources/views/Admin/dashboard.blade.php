@@ -4,7 +4,7 @@
     <div class="mb-10">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Dashboard Plant - {{ $kode }}</h1>
+                <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Dashboard Plant - {{ $nama_bagian }}</h1>
                 <p class="mt-2 text-base text-gray-500">Berikut adalah report dari data COHV</p>
             </div>
             <div class="mt-4 sm:mt-0 text-sm font-medium text-gray-500">
@@ -103,10 +103,10 @@
                     <thead class="bg-purple-50 text-purple-800 font-semibold uppercase text-xs whitespace-nowrap">
                         <tr>
                             <th class="px-4 py-3 text-center">No.</th>
-                            <th class="px-4 py-3">No. Reservasi</th>
-                            <th class="px-4 py-3">Kode Material</th>
-                            <th class="px-4 py-3">Deskripsi Material</th>
-                            <th class="px-4 py-3 text-right">Req. Qty</th>
+                            <th class="px-4 py-3 text-center">No. Reservasi</th>
+                            <th class="px-4 py-3 text-center">Kode Material</th>
+                            <th class="px-4 py-3 text-center">Deskripsi Material</th>
+                            <th class="px-4 py-3 text-center">Req. Qty</th>
                             <th class="px-4 py-3 text-right">Stock</th>
                         </tr>
                     </thead>
@@ -114,11 +114,11 @@
                         @forelse($TData4 as $item)
                             <tr class="hover:bg-gray-50">
                                 <td class="px-4 py-3 text-center">{{ $loop->iteration }}</td>
-                                <td class="px-4 py-3 font-mono">{{ $item->RSNUM ?? '-' }}</td>
-                                <td class="px-4 py-3 font-mono">{{ $item->MATNR ?? '-' }}</td>
+                                <td class="px-4 py-3 ">{{ $item->RSNUM ?? '-' }}</td>
+                                <td class="px-4 py-3 ">{{ $item->MATNR ?? '-' }}</td>
                                 <td class="px-4 py-3">{{ $item->MAKTX ?? '-' }}</td>
-                                <td class="px-4 py-3 text-right font-medium">{{ number_format($item->BDMNG ?? 0, 0, ',', '.') }}</td>
-                                <td class="px-4 py-3 text-right font-medium text-blue-600">
+                                <td class="px-4 py-3 text-center font-medium">{{ number_format($item->BDMNG ?? 0, 0, ',', '.') }}</td>
+                                <td class="px-4 py-3 text-center font-medium text-blue-600">
                                     {{ number_format(($item->BDMNG ?? 0) - ($item->KALAB ?? 0), 0, ',', '.') }}
                                 </td>
                             </tr>

@@ -13,7 +13,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" xintegrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
     
+    {{-- ✅ PERBAIKAN: Mengkonfigurasi Tailwind untuk menggunakan font default baru --}}
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+
     <!-- Alpine Core (harus dimuat pertama) -->
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Alpine Plugins (dimuat setelah core) -->
@@ -24,7 +38,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        /* Style ini tidak lagi diperlukan karena sudah dihandle oleh config Tailwind */
+        /* body { font-family: 'Plus Jakarta Sans', sans-serif; } */
         [x-cloak] { display: none !important; }
     </style>
     
@@ -35,7 +50,7 @@
     @resize.window="sidebarCollapsed = window.innerWidth < 1024"
     x-init="$watch('isLoading', value => { if (value) startLoaderTypingEffect() })"
     @link-clicked.window="isLoading = true; setTimeout(() => { window.location.href = $event.detail.href }, 150)"
-    class="h-full bg-gray-100 antialiased">
+    class="h-full bg-gray-100 antialiased font-sans"> {{-- ✅ PERBAIKAN: Menambahkan class font-sans --}}
     
     <!-- Halaman Overlay Loading -->
     <div x-show="isLoading" x-cloak class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
@@ -57,14 +72,15 @@
         <div x-show="sidebarOpen" @click="sidebarOpen = false" x-cloak class="fixed inset-0 bg-black/30 z-30 lg:hidden"></div>
 
         <!-- Main Content -->
-        <!-- [DIPERBARUI] Menghapus class margin kiri dinamis. Flexbox akan menangani layout secara otomatis. -->
-        <div class="flex flex-col flex-1">
+        <div class="flex flex-col flex-1 min-w-0">
             <!-- Topbar -->
             <x-navigation.topbar />
 
             <!-- Page Content -->
-            <main class="flex-1 p-6 sm:p-8 overflow-y-auto">
-                {{ $slot }}
+            <main class="flex-1 overflow-y-auto">
+                <div class="max-w-7xl mx-auto px-6 sm:px-8 py-8">
+                    {{ $slot }}
+                </div>
             </main>
         </div>
     </div>
@@ -95,4 +111,3 @@
     @stack('scripts')
 </body>
 </html>
-

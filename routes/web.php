@@ -59,7 +59,10 @@ Route::middleware('auth')->group(function (){
 
     Route::get('notes/', [NoteController::class, 'index'])->name('notes.index');
     Route::post('notes/', [NoteController::class, 'store'])->name('notes.store');
-    Route::patch('notes/{note}/complete', [NoteController::class, 'markAsComplete'])->name('notes.complete'); 
+    // [MODIFIKASI] Route untuk update status
+    Route::patch('notes/{note}/status', [NoteController::class, 'updateStatus'])->name('notes.updateStatus');
+
+    Route::get('gr/{kode}', [ManufactController::class, 'list_gr'])->name('list.gr');
 
 });
 
@@ -129,16 +132,6 @@ Route::middleware('auth')->group(function () {
         ->name('admin.')
         ->group(function () {
             Route::get('/dashboard', action: [AdminController::class, 'index'])->name('dashboard');
-        });
-
-    // --- Korlap Routes ---
-    Route::middleware(['role:korlap'])
-        ->prefix('korlap')
-        ->name('korlap.')
-        ->group(function () {
-            Route::get('/dashboard', [KorlapController::class, 'index'])->name('dashboard');
-            Route::get('/tasks', [KorlapController::class, 'tasks'])->name('tasks');
-            Route::post('/tasks/{id}/update', [KorlapController::class, 'updateTask'])->name('tasks.update');
         });
 });
 

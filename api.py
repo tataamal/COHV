@@ -809,22 +809,22 @@ def schedule_order():
         username, password = get_credentials()
         conn = connect_sap(username, password)
 
-        data = request.get_json()
-        aufnr = data.get('AUFNR')
-        date = data.get('DATE')    # format: YYYYMMDD
-        time_str = data.get('TIME')  # format: HH:MM:SS
+        data = request.get_json(silent=True) or {}
+        aufnr    = data.get('AUFNR')
+        date     = data.get('DATE')      # format: YYYYMMDD
+        time_str = data.get('TIME')      # format: HH:MM:SS
 
         if not aufnr or not date or not time_str:
             return jsonify({'error': 'AUFNR, DATE, and TIME are required'}), 400
 
-        # Konversi time string ke datetime.time
+        # Konversi jam
         try:
             time_parts = [int(x) for x in time_str.split(':')]
-            time_obj = time(*time_parts)
-        except Exception as te:
-            return jsonify({'error': f'Format jam tidak valid: {time_str}'}), 400
+            time_obj = time(*time_parts)  # datetime.time
+        except Exception:
+            return jsonify({'error': f'Format jam tidak valid: {time_str} (harus HH:MM:SS)'}), 400
 
-        print(f"Calling BAPI_PRODORD_SCHEDULE with AUFNR={aufnr}, DATE={date}, TIME={time_obj}")
+        print(f"[Flask] BAPI_PRODORD_SCHEDULE AUFNR={aufnr} DATE={date} TIME={time_obj}")
 
         result = conn.call(
             'BAPI_PRODORD_SCHEDULE',
@@ -837,13 +837,15 @@ def schedule_order():
             ORDERS=[{'ORDER_NUMBER': aufnr}]
         )
 
+        # Commit
         conn.call('BAPI_TRANSACTION_COMMIT', WAIT='X')
 
+        # Selalu kembalikan field ini supaya konsisten dengan Laravel
         return jsonify({
-            'sap_return': result.get('RETURN', []),
-            'detail_return': result.get('DETAIL_RETURN', []),
-            'application_log': result.get('APPLICATION_LOG', []),
-        })
+            'sap_return':       result.get('RETURN', []),
+            'detail_return':    result.get('DETAIL_RETURN', []),
+            'application_log':  result.get('APPLICATION_LOG', []),
+        }), 200
 
     except Exception as e:
         import traceback

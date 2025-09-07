@@ -9,10 +9,14 @@ class Kode extends Model
 {
     use HasFactory;
     protected $table = 'kodes';
-    protected $fillable = ['kode','sap_user_id', 'nama_bagian', 'kategori'];
+    protected $fillable = ['kode','sap_user_id','mrp_id','nama_bagian','kategori'];
 
     public function sapUser()
     {
         return $this->belongsTo(SapUser::class, 'sap_user_id');
+    }
+    public function mrp()
+    {
+        return $this->hasOne(Kode::class);
     }
 }
