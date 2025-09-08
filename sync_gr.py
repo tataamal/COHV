@@ -286,7 +286,7 @@ def start_scheduler():
 # --- Titik Eksekusi Utama ---
 if __name__ == '__main__':
     if len(sys.argv) > 1:
-        mode = 'run_historical'
+        mode = sys.argv[1]
         if mode == 'run_now':
             logger.info("Mode: Eksekusi Manual Sekali Jalan (untuk hari ini).")
             run_sync_for_today()
